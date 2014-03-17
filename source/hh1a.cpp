@@ -49,15 +49,17 @@ void MHookHandler1a::OnMouseMove(LONG _x, LONG _y)
 	if(last_y>=screen_y) last_y=screen_y-1;
 }
 
-void MHookHandler1a::OnRDown()
+bool MHookHandler1a::OnRDown()
 {
 	rbutton_pressed=true;
 	MHKeypad::Reset(); // ќтпускаем нажатые кнопки
+	return true; // подавл€йте правый клик
 }
 
-void MHookHandler1a::OnRUp()
+bool MHookHandler1a::OnRUp()
 {
 	rbutton_pressed=false;
 	// Ќачинаем новый отсчет движений
 	MHVector::Reset();
+	return true; // подавл€йте правый клик
 }

@@ -64,7 +64,7 @@ void MHKeypad::Press4(int position, bool down, int shift)
 {
 #ifdef _DEBUG
 	//if((position<0)||(position>3)) 
-	if((position<0)||(position>5)) // Теперь бывает и 5 (на левой кнопке мыши) 
+	if((position<0)||(position>10)) // Теперь бывает и 5, и 10 (на правой кнопке мыши) 
  		MHReportError("Неверный аргумент у Press4");
 
 	if(down&&(1==button_pressed[position+shift])) 

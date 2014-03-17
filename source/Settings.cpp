@@ -11,6 +11,7 @@
 #include "hh3.h"
 #include "hh4.h"
 #include "hh5.h"
+#include "hh6.h"
 
 static char char_buf[4096];
 
@@ -18,6 +19,8 @@ extern HINSTANCE	MHInst;
 extern HWND		MHhwnd;
 extern HHOOK handle;
 extern	bool flag_left_button_key;
+extern bool flag_left_button_waits;
+extern bool flag_right_button_waits;
 extern	int top_position; 
 
 static char *filter_MHOOK="файлы MHOOK\0*.MHOOK\0\0";
@@ -32,6 +35,7 @@ DWORD MHSettings::time_between_pushes=100; // 100 миллисекунд между нажатиями на
 DWORD MHSettings::timeout_after_move=100; // 100 миллисекунд после последнего известия о движении мыши
 LONG MHSettings::minimal_mouse_speed=900; //(квадрат числа пикселов за 1/10 секунды)
 LONG MHSettings::timeout_mouse_switch=1500; // полторы секунды на переключение
+LONG MHSettings::timeout_mouse_click=143; // 1/7 секунды держим клавишу нажатой
 LONG MHSettings::deadx=100, MHSettings::deady=100; 
 bool MHSettings::flag_enable_speed_button=false;
 bool MHSettings::flag_2moves=false;
@@ -44,6 +48,9 @@ bool MHSettings::flag_alt2=true; // Две альтернативные раскладки
 bool MHSettings::flag_no_move_right_mb=false; // Флаг запрещает двигать мышь, когда нажата правая кнопка
 //bool MHSettings::flag_no_move_right_mb=true; // Флаг запрещает двигать мышь, когда нажата правая кнопка
 bool MHSettings::flag_mode5autoclick=false;
+bool MHSettings::flag_right_mb_doubleclick=false; // Стоп эмуляции по двойному щелчку
+bool MHSettings::flag_left_mb_push_twice=false; // нажимать клавишу также при отпускании ЛК мыши
+bool MHSettings::flag_right_mb_push_twice=false; // нажимать клавишу также при отпускании ПК мыши
 int MHSettings::circle_scale_factor=0;
 
 int MHSettings::mode=1;
@@ -57,6 +64,7 @@ MHookHandler2 hh2;
 MHookHandler3 hh3;
 MHookHandler4 hh4;
 MHookHandler5 hh5;
+MHookHandler6 hh6;
 
 //=== Массивы для параметров в диалоге ===/
 typedef struct
@@ -222,12 +230,17 @@ if (uMsg==WM_COMMAND)
 	if (uMsg==WM_INITDIALOG)
 	{
 		//SetWindowPos(hdwnd,NULL,50,50,0,0,SWP_NOSIZE);
-		SetWindowPos(hdwnd,HWND_TOPMOST,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
+		//SetWindowPos(hdwnd,HWND_TOPMOST,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
+		SetWindowPos(hdwnd,HWND_TOP,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
+		// Здесь не работает. 
+		//SetWindowLong(hdwnd,GWL_STYLE,GetWindowLong(hdwnd,GWL_STYLE) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+		
 		MHSettings::FillDialogue(hdwnd); // Заполняет списки
 		MHSettings::AfterLoad(hdwnd); // Показываем текущие значения
 		return 1; // Да, ставь фокус куда надо
 	}
-  
+
+ 
 return 0;
 }
 
@@ -373,6 +386,8 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		SendDlgItemMessage(hdwnd, IDC_RADIO2, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO3, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO4, BM_SETCHECK, BST_UNCHECKED, 0);
+		SendDlgItemMessage(hdwnd, IDC_RADIO5, BM_SETCHECK, BST_UNCHECKED, 0);
+		SendDlgItemMessage(hdwnd, IDC_RADIO6, BM_SETCHECK, BST_UNCHECKED, 0);
 
 		switch(MHSettings::mode)
 		{
@@ -394,6 +409,10 @@ void MHSettings::AfterLoad(HWND hdwnd)
 
 		case 5:
 			SendDlgItemMessage(hdwnd, IDC_RADIO5, BM_SETCHECK, BST_CHECKED, 0);
+			break;
+
+		case 6:
+			SendDlgItemMessage(hdwnd, IDC_RADIO6, BM_SETCHECK, BST_CHECKED, 0);
 			break;
 		}
 		
@@ -439,10 +458,25 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		if(MHSettings::flag_mode5autoclick) SendDlgItemMessage(hdwnd, IDC_CHECK_AUTOCLICK, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_AUTOCLICK, BM_SETCHECK, BST_UNCHECKED, 0);
 		
+		// 13. пауза по двойному щелчку
+		if(MHSettings::flag_right_mb_doubleclick) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_DBLCLK, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_DBLCLK, BM_SETCHECK, BST_UNCHECKED, 0);
+
+		// 14. // нажимать клавишу также при отпускании ЛК мыши
+		if(MHSettings::flag_left_mb_push_twice) SendDlgItemMessage(hdwnd, IDC_CHECK_LEFT_PUSH_TWICE, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_LEFT_PUSH_TWICE, BM_SETCHECK, BST_UNCHECKED, 0);
+
+		// 15. // нажимать клавишу также при отпускании ЛК мыши
+		if(MHSettings::flag_right_mb_push_twice) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_UNCHECKED, 0);
+
+
+		//flag_left_mb_push_twice
+		//IDC_CHECK_RIGHT_DBLCLK
 }
 
 
-
+extern bool flag_stop_emulation;
 BOOL MHSettings::SettingsDialogue(HWND hwnd)
 {
 	bool restart_hook=false;
@@ -457,6 +491,8 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 		// 2. Убить все таймеры
 		KillTimer(hwnd,1);
 		KillTimer(hwnd,2);
+		KillTimer(hwnd,3);
+		KillTimer(hwnd,4);
 		
 		// 3. Сбрасываем MVector и MHKeypad и чё там ещё
 		MHSettings::hh->Halt();
@@ -470,7 +506,9 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 
 		// 4. Текущий HookHandler обнуляем
 		MHSettings::hh=NULL;
-		
+		flag_stop_emulation=false;
+		flag_left_button_waits=false;
+		flag_right_button_waits=false;
 	}
 	return_code=DialogBox(MHInst,MAKEINTRESOURCE(IDD_DIALOG_SETTINGS),hwnd,(DLGPROC)DlgSettingsWndProc);
 	if((!return_code)&&(restart_hook))
@@ -505,7 +543,7 @@ typedef struct
 	int max_index;
 } T_save_struct;
 
-#define NUM_SAVE_LINES 32
+#define NUM_SAVE_LINES 35
 static T_save_struct save_struct[NUM_SAVE_LINES]=
 {
 	{"Sensitivity",save_int,&dlg_current_sensitivity,save_int,&dlg_sensitivity, MH_NUM_SENSITIVITY},
@@ -535,7 +573,7 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"Mode3Axe",save_int,&dlg_current_mode3axe,save_int,&dlg_mode3axe, MH_DEAD_ZONES},
 	{"FastSpeed",save_int,&dlg_current_speed,save_int,&dlg_speed, MH_NUM_SPEED},
 	{"Directions",save_int,&dlg_current_direction,save_int,&dlg_dirs, MH_NUM_DIRECTIONS},
-	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 6}, // Количество режимов (на самом деле нулевого нет, то есть 5)
+	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 7}, // Количество режимов (на самом деле нулевого нет, то есть 6)
 
 	// 4. Таймаут
 	{"TimeoutMove",save_int,&dlg_current_timeout,save_int,dlg_timeout,MH_NUM_TIMEOUT}, //23
@@ -549,42 +587,53 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"RightMBisKey", save_bool, &MHSettings::flag_right_mb_iskey,save_empty,0,0},
 	{"Alt2", save_bool, &MHSettings::flag_alt2,save_empty,0,0}, // 30
 	{"Autoclick", save_bool, &MHSettings::flag_mode5autoclick,save_empty,0,0},
-	{"CircleScale", save_int, &dlg_current_circlescale,save_int,dlg_circlescales,MH_NUM_CIRCLE_SCALES}
+	{"CircleScale", save_int, &dlg_current_circlescale,save_int,dlg_circlescales,MH_NUM_CIRCLE_SCALES},
+	{"RightMBDoubleClick", save_bool, &MHSettings::flag_right_mb_doubleclick,save_empty,0,0},
+
+	{"LeftMBPushTwice", save_bool, &MHSettings::flag_left_mb_push_twice,save_empty,0,0},
+	{"RightMBPushTwice", save_bool, &MHSettings::flag_right_mb_push_twice,save_empty,0,0}
 };
 
-int MHSettings::OpenMHookConfig(HWND hwnd)
+int MHSettings::OpenMHookConfig(HWND hwnd, char *default_filename)
 {
-	// выводим диалог
-	OPENFILENAME ofn=
+	if(NULL==default_filename)
 	{
-		sizeof(OPENFILENAME),
-		hwnd,
-		NULL, // в данном конкретном случае игнорируется
-		filter_MHOOK,
-		NULL,
-		0, // Не используем custom filter
-		0, // -"-
-		tfilename,
-		256,
-		tfiletitle,
-		256,
-		NULL,
-		"Открыть файл конфигурации MHOOK",
-		OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ,
-		0,
-		0,
-		"MHOOK",
-		0,0,0
-	};
+		// выводим диалог
+		OPENFILENAME ofn=
+		{
+			sizeof(OPENFILENAME),
+			hwnd,
+			NULL, // в данном конкретном случае игнорируется
+			filter_MHOOK,
+			NULL,
+			0, // Не используем custom filter
+			0, // -"-
+			tfilename,
+			256,
+			tfiletitle,
+			256,
+			NULL,
+			"Открыть файл конфигурации MHOOK",
+			OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ,
+			0,
+			0,
+			"MHOOK",
+			0,0,0
+		};
 
-	// Диалог запроса имени файла
-	if(0==GetOpenFileName(&ofn))
-	{
-		return 1;
+		// Диалог запроса имени файла
+		if(0==GetOpenFileName(&ofn))
+		{
+			return 1;
+		}
+			
+		// Имя файла показать в диалоге
+		SendDlgItemMessage(hwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
 	}
-
-	// Имя файла показать в диалоге
-	SendDlgItemMessage(hwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
+	else // Имя файла получено в качестве параметра функции
+	{
+		strcpy(tfilename,default_filename);
+	}
 
 	FILE *fin=fopen(tfilename,"r");
 	if(NULL==fin)
@@ -861,6 +910,13 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				MHSettings::flag_no_move_right_mb=true;
 				MHSettings::SetNumPositions(8); dlg_current_direction=1; // и принудительно выставить 8 позиций!!!
 			}
+			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO6,BM_GETCHECK, 0, 0)) 
+			{
+				MHSettings::mode=6;
+				MHSettings::hh=&hh6;
+				// Важно!!! В 6 режиме принудительно выставить 4 позиций!!!
+				MHSettings::SetNumPositions(4); dlg_current_direction=0;
+			}
 			//else
 
 			// 3.2. - кнопка не используется
@@ -912,5 +968,20 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_AUTOCLICK,BM_GETCHECK, 0, 0))
 				MHSettings::flag_mode5autoclick=true;
 			else MHSettings::flag_mode5autoclick=false;
+
+			// 13. Стоп эмуляции по двойному щелчку
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_DBLCLK,BM_GETCHECK, 0, 0))
+				MHSettings::flag_right_mb_doubleclick=true;
+			else MHSettings::flag_right_mb_doubleclick=false;
+
+			// 14. нажимать клавишу также при отпускании ЛК мыши
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_LEFT_PUSH_TWICE,BM_GETCHECK, 0, 0))
+				MHSettings::flag_left_mb_push_twice=true;
+			else MHSettings::flag_left_mb_push_twice=false;
+
+			// 15. нажимать клавишу также при отпускании ЛК мыши
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_PUSH_TWICE,BM_GETCHECK, 0, 0))
+				MHSettings::flag_right_mb_push_twice=true;
+			else MHSettings::flag_right_mb_push_twice=false;
 
 }

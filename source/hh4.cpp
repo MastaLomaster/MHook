@@ -213,7 +213,7 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 #endif
 }
 
-void MHookHandler4::OnRDown()
+bool MHookHandler4::OnRDown()
 {
 	rbutton_pressed=true;
 	MHKeypad::Reset(); // Отпускаем нажатые кнопки
@@ -222,9 +222,10 @@ void MHookHandler4::OnRDown()
 	last_y_direction=0;
 	// Почему-то Reset не включает перерисовку
 	InvalidateRect(MHhwnd,NULL,TRUE);
+	return true; // подавляйте правый клик
 }
 
-void MHookHandler4::OnRUp()
+bool MHookHandler4::OnRUp()
 {
 	rbutton_pressed=false;
 	// Начинаем новый отсчет движений
@@ -233,6 +234,7 @@ void MHookHandler4::OnRUp()
 	last_x_direction=0;
 	last_y_direction=0;
 	//initialized=false;
+	return true; // подавляйте правый клик
 }
 
 void MHookHandler4::OnDraw(HDC hdc, LONG window_size)

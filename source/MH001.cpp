@@ -10,7 +10,7 @@
 //char debug_buf[4096];
 
 // Глобальные переменные, которые могут потребоваться везде
-char*		MHAppName="Из мыши в клавиатуру";
+char*		MHAppName="Из мыши в клавиатуру 03.03g";
 HINSTANCE	MHInst;
 HWND		MHhwnd;
 HBRUSH green_brush, yellow_brush;
@@ -41,6 +41,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	screen_x=GetSystemMetrics(SM_CXSCREEN);
 	screen_y=GetSystemMetrics(SM_CYSCREEN);
 
+	// С самого начала пытаемся загрузить конфигурацию по умолчанию
+	MHSettings::OpenMHookConfig(NULL,"default.MHOOK");
 	// До появления окна выводим окно установок 
 	if(MHSettings::SettingsDialogue(NULL)) return -1;
 	
@@ -54,8 +56,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
                           //LoadIcon( hInst, MAKEINTRESOURCE(IDI_ICON1)),
 						  LoadIcon( NULL, IDI_APPLICATION),
                           LoadCursor(NULL, IDC_ARROW), 
-                          //(HBRUSH)GetStockObject(WHITE_BRUSH), 
-						  NULL,
+                          (HBRUSH)GetStockObject(WHITE_BRUSH), 
+						  //NULL,
 						  NULL,
 						  //MAKEINTRESOURCE(IDR_MENU1),
 						  TEXT(MHWindowCName) };
@@ -69,13 +71,16 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	}
 
 	// Какой нам нужен размер окна для клиентской области 200x200?
-	AdjustWindowRect(&rect,	WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX, false);
+	//AdjustWindowRect(&rect,	WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX, false);
+	AdjustWindowRect(&rect,	WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, false);
 	
 	//Создание главного окна
-	MHhwnd=CreateWindow( TEXT(MHWindowCName),
+	MHhwnd=CreateWindowEx(WS_EX_LAYERED|WS_EX_TOPMOST,
+	//MHhwnd=CreateWindow( 
+		TEXT(MHWindowCName),
 		TEXT(MHAppName),
-		//WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+		//WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		//CW_USEDEFAULT, CW_USEDEFAULT,
 		rect.right-rect.left, rect.bottom-rect.top,

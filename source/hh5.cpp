@@ -69,15 +69,16 @@ void MHookHandler5::OnMouseMove(LONG _x, LONG _y)
 	if(last_y>=screen_y) last_y=screen_y-1;
 }
 
-void MHookHandler5::OnRDown()
+bool MHookHandler5::OnRDown()
 {
 	rbutton_pressed=true;
 	position_mem=-1;
 	movement_happened=false;
 	//MHKeypad::Reset(); // ќтпускаем нажатые кнопки
+	return true; // подавл€йте правый клик
 }
 
-void MHookHandler5::OnRUp()
+bool MHookHandler5::OnRUp()
 {
 	rbutton_pressed=false;
 	// Ќачинаем новый отсчет движений
@@ -104,4 +105,5 @@ void MHookHandler5::OnRUp()
 		MHKeypad::Press4(10,true);
 		MHKeypad::Press4(10,false);
 	}
+	return true; // подавл€йте правый клик
 }

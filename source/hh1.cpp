@@ -16,6 +16,42 @@ extern LONG screen_x, screen_y;
 static int alt2_offset=0; // Смещение для альтернативных кодировок
 static int position_mem_opposite=0; // Раньше путались позиции от таймера и от противоположного направления. Теперь это разные переменные. 
 
+
+//=====================================================================================================
+// Функция, которая определяет, является ли новое направление противоположным к старому
+// Для 8 направлений считаем, что противоположными являются три направления >90 градусов от старого
+//=====================================================================================================
+static bool IsOpposite(int old_direction, int new_direction)
+{
+	int num_directions=MHSettings::GetNumPositions();
+	int opposite8;
+
+	if((-1==old_direction)||(-1==new_direction)) return false;
+
+	if(4==num_directions)
+	{
+		if((old_direction+2)%4==new_direction) return true;
+	}
+	else // 8 позиций
+	{
+		opposite8=(old_direction+4)%8;
+
+		if(new_direction==opposite8) return true;
+
+		if(0==opposite8) // Спец место, где семёрка переходит в 0
+		{
+			if((7==new_direction)||(1==new_direction)) return true;
+		}
+		else
+		{
+			if((new_direction==opposite8-1)||(new_direction==opposite8+1)) return true;
+		}
+	}
+
+	return false;
+}
+
+
 void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
@@ -37,17 +73,15 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 		if(!rbutton_pressed) // известно последнее положение мыши, правая кнопка не нажата
 		{
 			// Новая опция - из конца в конец в два движения (только при 0==alt_offset)
-			if((MHSettings::flag_2moves_mode1)&&(4==MHSettings::GetNumPositions())&&(0==alt2_offset))
+			if((MHSettings::flag_2moves_mode1)&&(0==alt2_offset))
 			{
 				if(0<=position) // новое направление
 				{
 					// Это противоположное направление?
-					if(((0==position)&&(2==position_mem_opposite)||
-						(1==position)&&(3==position_mem_opposite)||
-						(2==position)&&(0==position_mem_opposite)||
-						(3==position)&&(1==position_mem_opposite)))
+					if(IsOpposite(position_mem_opposite,position))
 					{
 						// 1. (при невыставленном флаге противоположного направления)
+						// сбросим нажатую клавишу. Нажать противоположную сможем только после таймаута
 						if(false==flag_opposite_direction)
 						{
 							// запомним время, отпустим кнопки, запомним направление (ниже)
@@ -64,24 +98,17 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 						}
 						else // при выставленном флаге противоположного направления
 						{
-							/*// Это возможно только тогда, когда мы вильнули в сторону и снова вернулись на нужное направление
-							// А это равносильно тому, что происходит в position==-1
-							if(timeGetTime()-opposite_time>50) // была пауза, можно идти в противоположном направлении
-							{
-								MHKeypad::Press(position_mem,true);
-								flag_opposite_direction=false;
-							}
-							else opposite_time=timeGetTime(); // паузы в 50 мс неподвижности не было, перевзводим */
+							// 2. Как такое случилось?
 							MHKeypad::Press(position,true,alt2_offset);
 							flag_opposite_direction=false;
 							position_mem_opposite=position;
-							 
 						}
 					}
 					else // не противоположное (position_mem содержит всё что угодно),
 					{
 						if(true==flag_opposite_direction) 
 						{
+							// 3.
 							// ждём выхода в сторону position_mem, а по дороге завернули в сторону
 							// только здесь возможен поворот в сторону !!!
 							// Но только если прошло время обездвиженности!!!
@@ -99,7 +126,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 							//MHKeypad::Press(position,true);
 							//flag_opposite_direction=false; // уход в сторону - сброс ожиданий
 						}
-						else
+						else // flag_opposite_direction=false
 						{
 							// не ждём выхода в сторону position_mem. 
 							// Нажимаем, только если -1==position_mem (при прилипании)
@@ -129,7 +156,6 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 			} //flag_2moves_mode1 и 4 позиции
 			else 
 			{
-				
 				if(0==alt2_offset)
 				{
 					// Почти по-старому, как было до модификации flag_2moves_mode1
@@ -158,7 +184,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 				}
 			}
 		} // правая кнопка не нажата
-		else // !!!! Здесь может быть 8 позиций, тогда движение с правой кнопкой игнорируем !!!!
+		else // нажата правая кнопка. Внимание!!!! Здесь может быть 8 позиций, тогда движение с правой кнопкой игнорируем !!!!
 		{
 			if(4==MHSettings::GetNumPositions())
 			{
@@ -220,7 +246,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 						// Остальные направления (стрелки вверх и вниз) игнорируем
 					}
 				} // выставлен флаг alt2, меняем раскладки
-			} // 4 позиции, а в 8 позициях с правой кнопкой ничего не делаем вобще
+			} // 4 позиции, а в 8 позициях с правой кнопкой ничего не делаем вообще
 			
 		} // правая кнопка нажата
 	} // if initialized
@@ -242,7 +268,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 #endif
 }
 
-void MHookHandler1::OnRDown()
+bool MHookHandler1::OnRDown()
 {
 	rbutton_pressed=true;
 #ifdef _DEBUG
@@ -261,9 +287,11 @@ void MHookHandler1::OnRDown()
 	{
 		alt2_offset=6;
 	}
+
+	return true; // подавляйте правый клик
 }
 
-void MHookHandler1::OnRUp()
+bool MHookHandler1::OnRUp()
 {
 	rbutton_pressed=false;
 #ifdef _DEBUG
@@ -284,6 +312,7 @@ void MHookHandler1::OnRUp()
 	// Почему-то Reset не включает перерисовку
 	InvalidateRect(MHhwnd,NULL,TRUE);
 	
+	return true; // подавляйте правый клик
 }
 
 extern LONG quad_x,quad_y; // Координаты квадратика в окне

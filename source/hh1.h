@@ -9,8 +9,8 @@ class MHookHandler1:public MHookHandler
 public:
 	MHookHandler1():flag_opposite_direction(false){};
 	virtual void OnMouseMove(LONG _x, LONG _y);
-	virtual void OnRDown();
-	virtual void OnRUp();
+	virtual bool OnRDown();
+	virtual bool OnRUp();
 	virtual void OnDraw(HDC hdc, LONG window_size); // дл€ отладки
 	virtual void OnTimer(); // Ќужен, когда нажата права€ кнопка мыши, включающ€ режим 3
 	virtual void Halt();

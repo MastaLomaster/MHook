@@ -135,7 +135,7 @@ void MHookHandler5a::OnMouseMove(LONG _x, LONG _y)
 	if(last_y>=screen_y) last_y=screen_y-1;
 }
 
-void MHookHandler5a::OnRDown()
+bool MHookHandler5a::OnRDown()
 {
 	KillTimer(MHhwnd,1);
 	rbutton_pressed=true;
@@ -144,10 +144,11 @@ void MHookHandler5a::OnRDown()
 	position_mem=-1;
 	offset=0;
 	movement_happened=false;
+	return true; // подавл€йте правый клик
 
 }
 
-void MHookHandler5a::OnRUp()
+bool MHookHandler5a::OnRUp()
 {
 	KillTimer(MHhwnd,1);
 	rbutton_pressed=false;
@@ -161,7 +162,7 @@ void MHookHandler5a::OnRUp()
 	{
 		//  нопку нажали, но мышь не двигали. Ќадо бы выполнить что-то
 	}
-
+	return true; // подавл€йте правый клик
 }
 
 void MHookHandler5a::Halt()

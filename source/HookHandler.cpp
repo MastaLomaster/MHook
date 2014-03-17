@@ -2,6 +2,11 @@
 #include "HookHandler.h"
 #include "Settings.h"
 
+extern HWND		MHhwnd;
+extern bool flag_left_button_waits;
+extern bool flag_right_button_waits;
+extern LONG screen_x, screen_y;
+
 //========================================================================
 // Нажатие пятой клавиши при быстром движении мыши
 //========================================================================
@@ -41,17 +46,45 @@ void MHookHandler::OnFastMove(LONG _dx, LONG _dy)
 	last_button5_time=time_now;
 }
 
+//==========================================================================
+// Обработчик скролла для режимов, где скролл не нужен, должен выглядеть так
+//==========================================================================
+void MHookHandler::OnMouseScroll(LONG _x, LONG _y)
+{
+	OnMouseMove(_x,_y); // По умолчанию все хендлеры не обращают внимание на то, что нажата не только правая, но и левая
+}
+
+	
+
 //========================================================================
 // Нажатие шестой клавиши при режиме, когда левая кнопка бездействует
 //========================================================================
 void MHookHandler::OnLDown()
 {
-	MHKeypad::Press4(5, true);
+	// Только если ещё не действует таймер!
+	if(!flag_left_button_waits)
+	{
+		MHKeypad::Press4(5, true);
+		//if(MHSettings::flag_left_mb_push_twice) MHKeypad::Press4(5,false); // Это если мы при отпускании мыши жмём клавишу ещё раз
+		if(MHSettings::flag_left_mb_push_twice) 
+		{
+			SetTimer(MHhwnd,3,MHSettings::timeout_mouse_click,NULL); // Это если мы при отпускании мыши жмём клавишу ещё раз
+			flag_left_button_waits=true;
+		}
+	}
 }
 
 void MHookHandler::OnLUp()
 {
-	MHKeypad::Press4(5, false);
+	if(MHSettings::flag_left_mb_push_twice) 
+	{
+		if(!flag_left_button_waits)
+		{
+			MHKeypad::Press4(5,true); // Это если мы при отпускании мыши жмём клавишу ещё раз
+			SetTimer(MHhwnd,3,MHSettings::timeout_mouse_click,NULL); 
+		}
+	}
+	else MHKeypad::Press4(5, false);
 }
 
 //========================================================================

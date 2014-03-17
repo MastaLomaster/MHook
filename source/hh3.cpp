@@ -69,7 +69,7 @@ void MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 	if(last_y>=screen_y) last_y=screen_y-1;
 }
 
-void MHookHandler3::OnRDown()
+bool MHookHandler3::OnRDown()
 {
 	KillTimer(MHhwnd,1);
 	rbutton_pressed=true;
@@ -77,10 +77,10 @@ void MHookHandler3::OnRDown()
 	MHVector::Reset();
 	position_mem=-1;
 	offset=6;
-
+	return true; // подавл€йте правый клик
 }
 
-void MHookHandler3::OnRUp()
+bool MHookHandler3::OnRUp()
 {
 	KillTimer(MHhwnd,1);
 	rbutton_pressed=false;
@@ -89,6 +89,7 @@ void MHookHandler3::OnRUp()
 	MHVector::Reset();
 	position_mem=-1;
 	offset=0;
+	return true; // подавл€йте правый клик
 }
 
 void MHookHandler3::Halt()

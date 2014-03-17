@@ -2,16 +2,11 @@
 #include "MHKeypad.h"
 #include "Settings.h"
 
-// У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
-// Потом вынести это на экран параметров
-#undef SASHA_ZENKO
-
 extern HWND		MHhwnd; // Нужна для установки таймера
 extern LONG screen_x, screen_y; // Для определения углов экрана
 extern bool flag_inside_window; // Определён в оконной процедуре, показывает, что мы внутри окна
-
 bool flag_scroll_started=false;
-bool flag_stop_mouse=false;
+
 
 bool flag_left_button_key=false;
 bool flag_stop_emulation=false;
@@ -33,7 +28,6 @@ static bool left_button_down=false;
 //====================================================================================
 LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam) 
 {
-	bool suppress_right_mb=true;
 	
     if (!disabled)
 	{
@@ -72,14 +66,11 @@ LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam)
 				{
 					if(MHSettings::hh)
 					{
-						// Только в режиме 6 scroll отличается от move, остальным режимам всё равно, что вызывать
-						if((right_button_down && left_button_down) || flag_scroll_started) 
+						if(!flag_scroll_started) 
 						{
-							MHSettings::hh->OnMouseScroll(pMouseStruct->pt.x, pMouseStruct->pt.y);
-							// !!! Ошибка была !!! Кроме режима 6 никто не знает, что мышь на месте стоит !!!
-nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при скролле мышь не двигать, если скролл из окошка!
+							MHSettings::hh->OnMouseMove(pMouseStruct->pt.x, pMouseStruct->pt.y);
 						}
-						MHSettings::hh->OnMouseMove(pMouseStruct->pt.x, pMouseStruct->pt.y);
+						else MHSettings::hh->OnMouseScroll(pMouseStruct->pt.x, pMouseStruct->pt.y);
 					}
 				}
 
@@ -87,28 +78,19 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 				if((right_button_down)&&(MHSettings::flag_no_move_right_mb)) return 1;
 				break;
 
-			case WM_MBUTTONDOWN: // У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
-#ifdef SASHA_ZENKO
-				flag_scroll_started=true;
-				return 1;
-#endif
-			case WM_RBUTTONDOWN: 
-
-			//case WM_RBUTTONDOWN:
+			case WM_MBUTTONDOWN:
+			case WM_RBUTTONDOWN:
 				right_button_down=true;
 				if(MHSettings::hh)
 				{
-					// Проверим, не собираемся ли мы ткнуть в наш квадратик?
-					// Что означает начало скролла
-					if(flag_inside_window)
+					if(left_button_down) // Обе кнопки нажаты - начинаем режим скролла
 					{
 						flag_scroll_started=true;
-						flag_stop_mouse=true;
 						if(MHSettings::hh) MHSettings::hh->Deinitialize();
-						return 1; // Подавляем это нажатие
+						return 1;
 					}
-					// Нет, это не начало скролла, обрабатываем по обычному
-					else if(MHSettings::flag_right_mb_iskey) 
+
+					if(MHSettings::flag_right_mb_iskey) 
 					{
 						// Только если ещё не действует таймер!
 						if(!flag_right_button_waits)
@@ -122,7 +104,7 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 							}
 						}
 					}
-					else suppress_right_mb=MHSettings::hh->OnRDown();
+					else MHSettings::hh->OnRDown();
 					
 					// Заплаточка: двойной щелчок переводит левую кнопку мыши в другое состояние
 					if(MHSettings::flag_right_mb_doubleclick)
@@ -147,27 +129,21 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					
 
 
-					// Правую кнопку мыши подавляем (но не всегда)
-					if (suppress_right_mb) return 1;
+					// Правую кнопку мыши подавляем
+					return 1;
 				}
 				break;
 
-			case WM_MBUTTONUP:	// У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
-#ifdef SASHA_ZENKO
-				flag_scroll_started=false;
-				return 1;
-#endif
+			case WM_MBUTTONUP:
 			case WM_RBUTTONUP:
 				right_button_down=false;
 
 				// Возможно, мы ждали отпускания мыши после двойного щелчка
 				if(flag_stop_emulation) flag_stop_emulation=false;
 
-				// Возможно, это был скролл?
 				if(flag_scroll_started)
 				{
 					flag_scroll_started=false;
-					flag_stop_mouse=false;
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
 					return 1; // подавляем, так как подавили нажатие
 				}
@@ -188,11 +164,11 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 						}
 						else MHKeypad::Press4(10,false);
 					}
-					else suppress_right_mb = MHSettings::hh->OnRUp();
+					else MHSettings::hh->OnRUp();
 
 
-					// Правую кнопку мыши подавляем (но не всегда)
-					if (suppress_right_mb) return 1;
+					// Правую кнопку мыши подавляем
+					return 1;
 				}
 				break;
 
@@ -201,16 +177,14 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 				// Проверим, не собираемся ли мы ткнуть в наш квадратик?
 				// Что означает начало скролла
 				//if((flag_left_button_key)&&(flag_inside_window))
-				/* if((flag_inside_window)||(right_button_down))
+				if((flag_inside_window)||(right_button_down))
 				{
 					flag_scroll_started=true;
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
 					return 1;
 				}
 				// Нет, это не начало скролла, обрабатываем по обычному
-				else 
-				*/
-				if((flag_left_button_key)&&(MHSettings::hh))
+				else if((flag_left_button_key)&&(MHSettings::hh))
 				{
 					MHSettings::hh->OnLDown(); 
 					return 1;
@@ -237,14 +211,13 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					}
 				}
 			*/
-			/*	if(flag_scroll_started)
+				if(flag_scroll_started)
 				{
 					flag_scroll_started=false;
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
 					return 1; // подавляем, так как подавили нажатие
 				}
-				else */ 
-				if(flag_left_button_key) // держали недолго
+				else if(flag_left_button_key) // держали недолго
 				{
 					MHSettings::hh->OnLUp();
 					return 1;
