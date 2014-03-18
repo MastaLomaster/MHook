@@ -52,6 +52,7 @@ bool MHSettings::flag_right_mb_doubleclick=false; // Стоп эмуляции по двойному щ
 bool MHSettings::flag_left_mb_push_twice=false; // нажимать клавишу также при отпускании ЛК мыши
 bool MHSettings::flag_right_mb_push_twice=false; // нажимать клавишу также при отпускании ПК мыши
 int MHSettings::circle_scale_factor=0;
+bool MHSettings::flag_downall=false; // вниз и вбок = просто вниз (1 режим)
 
 int MHSettings::mode=1;
 int MHSettings::mode3axe=0;
@@ -470,6 +471,9 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		if(MHSettings::flag_right_mb_push_twice) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_UNCHECKED, 0);
 
+		// 16. вниз+вбок = простол вниз (режим 1)
+		if(MHSettings::flag_downall) SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_UNCHECKED, 0);
 
 		//flag_left_mb_push_twice
 		//IDC_CHECK_RIGHT_DBLCLK
@@ -543,7 +547,7 @@ typedef struct
 	int max_index;
 } T_save_struct;
 
-#define NUM_SAVE_LINES 35
+#define NUM_SAVE_LINES 36
 static T_save_struct save_struct[NUM_SAVE_LINES]=
 {
 	{"Sensitivity",save_int,&dlg_current_sensitivity,save_int,&dlg_sensitivity, MH_NUM_SENSITIVITY},
@@ -591,7 +595,8 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"RightMBDoubleClick", save_bool, &MHSettings::flag_right_mb_doubleclick,save_empty,0,0},
 
 	{"LeftMBPushTwice", save_bool, &MHSettings::flag_left_mb_push_twice,save_empty,0,0},
-	{"RightMBPushTwice", save_bool, &MHSettings::flag_right_mb_push_twice,save_empty,0,0}
+	{"RightMBPushTwice", save_bool, &MHSettings::flag_right_mb_push_twice,save_empty,0,0},
+	{"DownAll", save_bool, &MHSettings::flag_downall,save_empty,0,0}
 };
 
 int MHSettings::OpenMHookConfig(HWND hwnd, char *default_filename)
@@ -983,5 +988,10 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_PUSH_TWICE,BM_GETCHECK, 0, 0))
 				MHSettings::flag_right_mb_push_twice=true;
 			else MHSettings::flag_right_mb_push_twice=false;
+
+			// 16. вниз+вбок = простол вниз (режим 1)
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_DOWNALL,BM_GETCHECK, 0, 0))
+				MHSettings::flag_downall=true;
+			else MHSettings::flag_downall=false;
 
 }

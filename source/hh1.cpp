@@ -70,6 +70,10 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 
 		position=MHVector::NewValues(dx,dy);
 
+		// Если вбок и вниз = просто вбок, меняем позиции 3 и 5 на 4
+		if((8==MHSettings::GetNumPositions())&&((3==position)||(5==position)))
+			position=4;
+
 		if(!rbutton_pressed) // известно последнее положение мыши, правая кнопка не нажата
 		{
 			// Новая опция - из конца в конец в два движения (только при 0==alt_offset)
