@@ -53,6 +53,8 @@ bool MHSettings::flag_left_mb_push_twice=false; // нажимать клавишу также при от
 bool MHSettings::flag_right_mb_push_twice=false; // нажимать клавишу также при отпускании ПК мыши
 int MHSettings::circle_scale_factor=0;
 bool MHSettings::flag_downall=false; // вниз и вбок = просто вниз (1 режим)
+bool MHSettings::flag_skip_fast=false; // Быстрое движение мыши игнорируется
+bool MHSettings::flag_up_immediately=false; // Только что нажатая кнопка должна быть отжата (1 режим)
 
 int MHSettings::mode=1;
 int MHSettings::mode3axe=0;
@@ -475,6 +477,14 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		if(MHSettings::flag_downall) SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_UNCHECKED, 0);
 
+		// 17. вниз+вбок сразу отпускать (режим 1)
+		if(MHSettings::flag_up_immediately) SendDlgItemMessage(hdwnd, IDC_CHECK_UP_IMMEDIATELY, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_UP_IMMEDIATELY, BM_SETCHECK, BST_UNCHECKED, 0);
+
+		// 18. игнорировать быстрое движение (режим 3)
+		if(MHSettings::flag_skip_fast) SendDlgItemMessage(hdwnd, IDC_CHECK_SKIP_FAST, BM_SETCHECK, BST_CHECKED, 0);
+		else SendDlgItemMessage(hdwnd, IDC_CHECK_SKIP_FAST, BM_SETCHECK, BST_UNCHECKED, 0);
+
 		//flag_left_mb_push_twice
 		//IDC_CHECK_RIGHT_DBLCLK
 }
@@ -547,7 +557,7 @@ typedef struct
 	int max_index;
 } T_save_struct;
 
-#define NUM_SAVE_LINES 36
+#define NUM_SAVE_LINES 38
 static T_save_struct save_struct[NUM_SAVE_LINES]=
 {
 	{"Sensitivity",save_int,&dlg_current_sensitivity,save_int,&dlg_sensitivity, MH_NUM_SENSITIVITY},
@@ -594,9 +604,11 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"CircleScale", save_int, &dlg_current_circlescale,save_int,dlg_circlescales,MH_NUM_CIRCLE_SCALES},
 	{"RightMBDoubleClick", save_bool, &MHSettings::flag_right_mb_doubleclick,save_empty,0,0},
 
-	{"LeftMBPushTwice", save_bool, &MHSettings::flag_left_mb_push_twice,save_empty,0,0},
+	{"LeftMBPushTwice", save_bool, &MHSettings::flag_left_mb_push_twice,save_empty,0,0}, // 34
 	{"RightMBPushTwice", save_bool, &MHSettings::flag_right_mb_push_twice,save_empty,0,0},
-	{"DownAll", save_bool, &MHSettings::flag_downall,save_empty,0,0}
+	{"DownAll", save_bool, &MHSettings::flag_downall,save_empty,0,0},
+	{"SkipFast", save_bool, &MHSettings::flag_skip_fast,save_empty,0,0},
+	{"UpImmediately", save_bool, &MHSettings::flag_up_immediately,save_empty,0,0}
 };
 
 int MHSettings::OpenMHookConfig(HWND hwnd, char *default_filename)
@@ -994,4 +1006,14 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				MHSettings::flag_downall=true;
 			else MHSettings::flag_downall=false;
 
+			// 17. вниз+вбок сразу отпускать (режим 1)
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_UP_IMMEDIATELY,BM_GETCHECK, 0, 0))
+				MHSettings::flag_up_immediately=true;
+			else MHSettings::flag_up_immediately=false;
+
+
+			// 18. игнорировать быстрое движение (режим 3)
+			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_SKIP_FAST,BM_GETCHECK, 0, 0))
+				MHSettings::flag_skip_fast=true;
+			else MHSettings::flag_skip_fast=false;
 }

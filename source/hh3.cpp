@@ -41,21 +41,26 @@ void MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 		dx=(_x-last_x);
 		dy=(_y-last_y);
 
+		
 		// Может, пятую кнопку можно нажать?
 		if(MHSettings::flag_enable_speed_button) OnFastMove(dx,dy);
-		position=MHVector::NewValues(dx,dy);
+		
+		if((!MHSettings::flag_skip_fast)||(dx*dx+dy*dy<30)) 
+		{
+			position=MHVector::NewValues(dx,dy);
 
-		if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
-		{
-			MHKeypad::Press(position,true,offset);
-			position_mem=position;
-		}
-		// Таймер взводим заново при любом движении мыши, если было хоть что-то нажато ранее
-		// то есть -1!=position_mem
-		if(-1!=position_mem)
-		{
-			last_time=timeGetTime();
-			SetTimer(MHhwnd,1,MHSettings::timeout_after_move,NULL);
+			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
+			{
+				MHKeypad::Press(position,true,offset);
+				position_mem=position;
+			}
+			// Таймер взводим заново при любом движении мыши, если было хоть что-то нажато ранее
+			// то есть -1!=position_mem
+			if(-1!=position_mem)
+			{
+				last_time=timeGetTime();
+				SetTimer(MHhwnd,1,MHSettings::timeout_after_move,NULL);
+			}
 		}
 	}
 

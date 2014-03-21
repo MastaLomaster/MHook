@@ -55,6 +55,7 @@ static bool IsOpposite(int old_direction, int new_direction)
 void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
+	bool goup=false; // Сразу отпусти клавишу
 		
 	// При нажатой правой кнопке мыши не передаём её движения в MHVector,
 	// НО! продолжаем отслеживать last_x и last_y, не сбрасывая initialized! 
@@ -71,8 +72,11 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 		position=MHVector::NewValues(dx,dy);
 
 		// Если вбок и вниз = просто вбок, меняем позиции 3 и 5 на 4
-		if((8==MHSettings::GetNumPositions())&&((3==position)||(5==position)))
+		if((true==MHSettings::flag_downall)&&(8==MHSettings::GetNumPositions())&&((3==position)||(5==position)))
+		{
+			if(MHSettings::flag_up_immediately) goup=true; 
 			position=4;
+		}
 
 		if(!rbutton_pressed) // известно последнее положение мыши, правая кнопка не нажата
 		{
@@ -106,6 +110,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 							MHKeypad::Press(position,true,alt2_offset);
 							flag_opposite_direction=false;
 							position_mem_opposite=position;
+							if(goup) MHKeypad::Press(position,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 						}
 					}
 					else // не противоположное (position_mem содержит всё что угодно),
@@ -121,6 +126,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 								MHKeypad::Press(position,true, alt2_offset);
 								flag_opposite_direction=false;
 								position_mem_opposite=position;
+								if(goup) MHKeypad::Press(position,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 							}
 							else 
 							{
@@ -138,6 +144,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 							{
 								MHKeypad::Press(position,true, alt2_offset);
 								position_mem_opposite=position;
+								if(goup) MHKeypad::Press(position,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 							}
 						}
 					
@@ -152,6 +159,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 						{
 							MHKeypad::Press(position_mem_opposite,true, alt2_offset);
 							flag_opposite_direction=false;
+							if(goup) MHKeypad::Press(position_mem_opposite,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 						}
 						else opposite_time=timeGetTime(); // паузы в 50 мс неподвижности не было, перевзводим
 					}
@@ -166,6 +174,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 					if(0<=position) // -2=мышь ваще не двигалась, -1= направление не изменилось
 					{
 						MHKeypad::Press(position,true,alt2_offset);
+						if(goup) MHKeypad::Press(position,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 					}
 				}
 				else // Если это альтернативная раскладка, то взвести таймер
@@ -175,6 +184,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 					{
 						MHKeypad::Press(position,true, alt2_offset); // По движению правой кнопки нажимать альтернативные клавиши из первой раскладки
 						position_mem=position;
+						if(goup) MHKeypad::Press(position,false, alt2_offset); // Флаг сказал, что нужно тут же отжать
 						
 					}
 					// Таймер взводим заново при любом движении мыши, если было хоть что-то нажато ранее
