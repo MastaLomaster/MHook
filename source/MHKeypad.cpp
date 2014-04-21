@@ -165,12 +165,12 @@ void MHKeypad::Press(int position, bool down, int shift)
 				{
 					if(key8[keypad_position][i]==key8[position][i]) continue; // Эту кнопку не меняем
 
-					if(1==key8[keypad_position][i]) Press4(i,false); // отпускаем
-					else Press4(i,true); // нажимаем
+					if(1==key8[keypad_position][i]) Press4(i,false,shift); // отпускаем
+					else Press4(i,true,shift); // нажимаем
 				}
 				else // отжимать нечего, только нажимаем
 				{
-					if(1==key8[position][i]) Press4(i,true);
+					if(1==key8[position][i]) Press4(i,true,shift);
 				}
 			}
 			keypad_position=position;
@@ -180,7 +180,7 @@ void MHKeypad::Press(int position, bool down, int shift)
 		else 
 		{
 			//OutputDebugString("Отпустили8\n");
-			Reset(); // при нажатии отпустить все отсальные. А при отпускании не делать этого.
+			Reset(shift); // при нажатии отпустить все отсальные. А при отпускании не делать этого.
 			keypad_position=-1;
 		}
 	} // 8 направлений
@@ -210,28 +210,28 @@ void MHKeypad::Reset(int shift)
 		case 4:
 		case 6:
 
-			Press4(keypad_position/2, false);
+			Press4(keypad_position/2, false, shift);
 			break;
 
 			// Отжимаем две кнопки
 		case 1: // нулевую и первую
-			Press4(0, false);
-			Press4(1, false);
+			Press4(0, false, shift);
+			Press4(1, false, shift);
 			break;
 
 		case 3: // первую и вторую
-			Press4(1, false);
-			Press4(2, false);
+			Press4(1, false, shift);
+			Press4(2, false, shift);
 			break;
 	
 		case 5: // вторую и третью
-			Press4(2, false);
-			Press4(3, false);
+			Press4(2, false, shift);
+			Press4(3, false, shift);
 			break;
 
 		case 7: // нулевую и третью
-			Press4(0, false);
-			Press4(3, false);
+			Press4(0, false, shift);
+			Press4(3, false, shift);
 			break;
 		}
 		

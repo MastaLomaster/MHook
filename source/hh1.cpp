@@ -107,6 +107,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 						else // при выставленном флаге противоположного направления
 						{
 							// 2. Как такое случилось?
+							// Не дожидаясь времени, когда можно идти назад, снова пошли вперёд
 							MHKeypad::Press(position,true,alt2_offset);
 							flag_opposite_direction=false;
 							position_mem_opposite=position;
@@ -152,6 +153,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 				}
 				else if(-1==position)
 				{
+					// 4.
 					// Обрабатываем, только если не довели до конца
 					if(flag_opposite_direction)
 					{
@@ -168,6 +170,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 			} //flag_2moves_mode1 и 4 позиции
 			else 
 			{
+				// 5.
 				if(0==alt2_offset)
 				{
 					// Почти по-старому, как было до модификации flag_2moves_mode1
@@ -179,6 +182,7 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 				}
 				else // Если это альтернативная раскладка, то взвести таймер
 				{
+					// 6.
 					// как раньше при обработке правой кнопки мыши
 					if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
 					{
@@ -200,8 +204,9 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 		} // правая кнопка не нажата
 		else // нажата правая кнопка. Внимание!!!! Здесь может быть 8 позиций, тогда движение с правой кнопкой игнорируем !!!!
 		{
-			if(4==MHSettings::GetNumPositions())
-			{
+			// Изменение 18.04 - позволяем альтернативным кодировкам  работать и в 8 позициях
+			//if(4==MHSettings::GetNumPositions())
+			//{
 				if(!MHSettings::flag_alt2) // Так было, пока не ввели вторую альтернативную: движения с нажатой правой вызывали нажатия c таймером
 				{
 					// обработка правой кнопки мыши
@@ -221,46 +226,89 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 				}
 				else // flag_alt2 - теперь движения с нажатой правой - это выбор раскладки
 				{
-					switch(position)
+					// Изменение 18.04 - позволяем альтернативным кодировкам  работать и в 8 позициях
+					if(4==MHSettings::GetNumPositions())
 					{
+						switch(position)
+						{
 						
-					case 1: // стрелка впрваво - первая альтернативная
-						// Первым делом - отпустить нажатые клавиши
-						MHKeypad::Reset(alt2_offset);
-						position_mem=-1;
-						switch(alt2_offset)
+						case 1: // стрелка впрваво - первая альтернативная
+							// Первым делом - отпустить нажатые клавиши
+							MHKeypad::Reset(alt2_offset);
+							position_mem=-1;
+							switch(alt2_offset)
+							{
+							case 6: // Включена уже, выключить
+								alt2_offset=0;
+								break;
+
+							case 0: // основная, поменять
+							case 11: // Включена вторая, поменять
+								alt2_offset=6;
+								break;
+							}
+							break;
+
+							case 3: // стрелка влево - выбор второй альтернативной
+							// Первым делом - отпустить нажатые клавиши
+							MHKeypad::Reset(alt2_offset);
+							position_mem=-1;
+							switch(alt2_offset)
+							{
+							case 11: // Включена уже, выключить
+								alt2_offset=0;
+								break;
+
+							case 0: // основная, поменять
+							case 6: // Включена вторая, поменять
+								alt2_offset=11;
+								break;
+							}
+							break;
+							// Остальные направления (стрелки вверх и вниз) игнорируем
+						}	// switch
+					} // 4 позиции
+					else // (8 позиций) Изменение 18.04 - позволяем альтернативным кодировкам  работать и в 8 позициях
+					{
+						if((position>0)&&(position<4)) // правая полусфера.
 						{
-						case 6: // Включена уже, выключить
-							alt2_offset=0;
-							break;
+							MHKeypad::Reset(alt2_offset);
+							position_mem=-1;
+							switch(alt2_offset)
+							{
+							case 6: // Включена уже, выключить
+								alt2_offset=0;
+								break;
 
-						case 0: // основная, поменять
-						case 11: // Включена вторая, поменять
-							alt2_offset=6;
-							break;
+							case 0: // основная, поменять
+							case 11: // Включена вторая, поменять
+								alt2_offset=6;
+								break;
+							}
 						}
-						break;
-
-					case 3: // стрелка влево - выбор второй альтернативной
-						// Первым делом - отпустить нажатые клавиши
-						MHKeypad::Reset(alt2_offset);
-						position_mem=-1;
-						switch(alt2_offset)
+						else if((position>4)) // левая полусфера
 						{
-						case 11: // Включена уже, выключить
-							alt2_offset=0;
-							break;
+							// Первым делом - отпустить нажатые клавиши
+							MHKeypad::Reset(alt2_offset);
+							position_mem=-1;
+							switch(alt2_offset)
+							{
+							case 11: // Включена уже, выключить
+								alt2_offset=0;
+								break;
 
-						case 0: // основная, поменять
-						case 6: // Включена вторая, поменять
-							alt2_offset=11;
-							break;
+							case 0: // основная, поменять
+							case 6: // Включена вторая, поменять
+								alt2_offset=11;
+								break;
+							}
 						}
-						break;
 						// Остальные направления (стрелки вверх и вниз) игнорируем
-					}
+						
+					} // 8 позиций
 				} // выставлен флаг alt2, меняем раскладки
-			} // 4 позиции, а в 8 позициях с правой кнопкой ничего не делаем вообще
+			// Изменение 18.04 - позволяем альтернативным кодировкам  работать и в 8 позициях
+			//} // 4 позиции, а в 8 позициях с правой кнопкой ничего не делаем вообще
 			
 		} // правая кнопка нажата
 	} // if initialized
