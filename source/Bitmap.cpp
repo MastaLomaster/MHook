@@ -1,4 +1,4 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "resource.h"
 #include "Bitmap.h"
 #include "Settings.h"
@@ -36,58 +36,58 @@ void MHBitmap::OnDraw(HDC hdc,int position)
 	switch(MHSettings::GetNumPositions())
 	{
 	case 4:
-		// Сначала рисует незакрашенный кружочек
+		// РЎРЅР°С‡Р°Р»Р° СЂРёСЃСѓРµС‚ РЅРµР·Р°РєСЂР°С€РµРЅРЅС‹Р№ РєСЂСѓР¶РѕС‡РµРє
 		BitBlt(hdc,0,0,200,200,hdc4,0,0,SRCCOPY);
 
 		switch(position)
 		{
-		case 0: // стрелка вверх
+		case 0: // СЃС‚СЂРµР»РєР° РІРІРµСЂС…
 			BitBlt(hdc,0,0,200,100,hdc4,200,0,SRCCOPY);
 			break;
-		case 1: // стрелка вправо
+		case 1: // СЃС‚СЂРµР»РєР° РІРїСЂР°РІРѕ
 			BitBlt(hdc,100,0,100,200,hdc4,100,199,SRCCOPY);
 			break;
-		case 2: // стрелка вниз
+		case 2: // СЃС‚СЂРµР»РєР° РІРЅРёР·
 			BitBlt(hdc,0,100,200,100,hdc4,200,100,SRCCOPY);
 			break;
-		case 3: // стрелка влево
+		case 3: // СЃС‚СЂРµР»РєР° РІР»РµРІРѕ
 			BitBlt(hdc,0,0,100,200,hdc4,0,199,SRCCOPY);
 			break;
 		} // switch position
 		break;
 	case 8:
-		// Сначала рисует незакрашенный кружочек
+		// РЎРЅР°С‡Р°Р»Р° СЂРёСЃСѓРµС‚ РЅРµР·Р°РєСЂР°С€РµРЅРЅС‹Р№ РєСЂСѓР¶РѕС‡РµРє
 		BitBlt(hdc,0,0,200,200,hdc8,0,0,SRCCOPY);
 
 		switch(position)
 		{
-		case 0: // стрелка вверх
+		case 0: // СЃС‚СЂРµР»РєР° РІРІРµСЂС…
 			BitBlt(hdc,0,0,200,100,hdc8,200,0,SRCCOPY);
 			break;
-		case 2: // стрелка вправо
+		case 2: // СЃС‚СЂРµР»РєР° РІРїСЂР°РІРѕ
 			BitBlt(hdc,100,0,100,200,hdc8,100,200,SRCCOPY);
 			break;
-		case 4: // стрелка вниз
+		case 4: // СЃС‚СЂРµР»РєР° РІРЅРёР·
 			BitBlt(hdc,0,100,200,100,hdc8,200,100,SRCCOPY);
 			break;
-		case 6: // стрелка влево
+		case 6: // СЃС‚СЂРµР»РєР° РІР»РµРІРѕ
 			BitBlt(hdc,0,0,100,200,hdc8,0,200,SRCCOPY);
 			break;
 
-			// Теперь промежуточные
-		case 1: // стрелка вверх-вправо
+			// РўРµРїРµСЂСЊ РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Рµ
+		case 1: // СЃС‚СЂРµР»РєР° РІРІРµСЂС…-РІРїСЂР°РІРѕ
 			BitBlt(hdc,100,0,100,100,hdc8,300,201,SRCCOPY);
 			break;
 
-		case 3: // стрелка вниз-вправо
+		case 3: // СЃС‚СЂРµР»РєР° РІРЅРёР·-РІРїСЂР°РІРѕ
 			BitBlt(hdc,100,100,100,100,hdc8,300,301,SRCCOPY);
 			break;
 
-		case 5: // стрелка вниз-влево
+		case 5: // СЃС‚СЂРµР»РєР° РІРЅРёР·-РІР»РµРІРѕ
 			BitBlt(hdc,0,100,100,100,hdc8,200,301,SRCCOPY);
 			break;
 
-		case 7: // стрелка вверх-вправо
+		case 7: // СЃС‚СЂРµР»РєР° РІРІРµСЂС…-РІРїСЂР°РІРѕ
 			BitBlt(hdc,0,0,100,100,hdc8,200,201,SRCCOPY);
 			break;
 		} // switch position

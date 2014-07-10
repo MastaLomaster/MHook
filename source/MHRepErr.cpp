@@ -1,5 +1,5 @@
-/*
-*	Сообщает об ошибках времени исполнения
+п»ї/*
+*	РЎРѕРѕР±С‰Р°РµС‚ РѕР± РѕС€РёР±РєР°С… РІСЂРµРјРµРЅРё РёСЃРїРѕР»РЅРµРЅРёСЏ
 */
 
 #include <windows.h>
@@ -7,61 +7,51 @@
 #include <stdio.h>
 #include "MHRepErr.h"
 
-// Сообщает о СИСТЕМНЫХ ошибках времени исполнения
-void MHReportError(char *SourceFile, char *FuncName, int LineNumber)
+// РЎРѕРѕР±С‰Р°РµС‚ Рѕ РЎРРЎРўР•РњРќР«РҐ РѕС€РёР±РєР°С… РІСЂРµРјРµРЅРё РёСЃРїРѕР»РЅРµРЅРёСЏ
+void MHReportError(TCHAR *SourceFile, TCHAR *FuncName, int LineNumber)
 {
-	DWORD res;				// Результат функции FormatMessage
-	void *BKBStringError;	// Указатель на строку для получения системной ошибки
-	char BKBMessage[1024];	// Это строка, в которой формируется сообщение об ошибке
-	DWORD BKBLastError=GetLastError(); // Получили код системной ошибки
+	DWORD res;				// Р РµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё FormatMessage
+	void *BKBStringError;	// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂРѕРєСѓ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СЃРёСЃС‚РµРјРЅРѕР№ РѕС€РёР±РєРё
+	TCHAR BKBMessage[1024];	// Р­С‚Рѕ СЃС‚СЂРѕРєР°, РІ РєРѕС‚РѕСЂРѕР№ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
+	DWORD BKBLastError=GetLastError(); // РџРѕР»СѓС‡РёР»Рё РєРѕРґ СЃРёСЃС‚РµРјРЅРѕР№ РѕС€РёР±РєРё
 	
 	
-	if (BKBLastError!=(DWORD)0) // Получить строку, если код не равен нулю
+	if (BKBLastError!=(DWORD)0) // РџРѕР»СѓС‡РёС‚СЊ СЃС‚СЂРѕРєСѓ, РµСЃР»Рё РєРѕРґ РЅРµ СЂР°РІРµРЅ РЅСѓР»СЋ
 	{
 		res=FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 						NULL, BKBLastError,
 						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 						(LPTSTR) &BKBStringError, 0, NULL );
 
-		if(res==(DWORD)0) BKBStringError=(void *)"Сообщение об ошибке не найдено";
+		if(res==(DWORD)0) BKBStringError=(void *)L"РЎРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ РЅРµ РЅР°Р№РґРµРЅРѕ";
 	}
 	else
 	{
-		BKBStringError=(void *)"Нет системной ошибки";
+		BKBStringError=(void *)L"РќРµС‚ СЃРёСЃС‚РµРјРЅРѕР№ РѕС€РёР±РєРё";
 	}
 	
-	// Сформировать строку с полным описанием ошибки
-	sprintf_s(BKBMessage, sizeof(BKBMessage),
-			"Module: %s\nFunction: %s\nLine number: %d\nSysErr: %d (%s)",
+	// РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ СЃС‚СЂРѕРєСѓ СЃ РїРѕР»РЅС‹Рј РѕРїРёСЃР°РЅРёРµРј РѕС€РёР±РєРё
+	swprintf_s(BKBMessage, _countof(BKBMessage),
+			L"Module: %s\r\nFunction: %s\r\nLine number: %d\r\nSysErr: %d (%s)",
 			SourceFile, FuncName, LineNumber,
-			BKBLastError, (char *)BKBStringError);
+			BKBLastError, (TCHAR *)BKBStringError);
 
 
-	//Освобождаем память, которую выделила функция FormatMessage
+	//РћСЃРІРѕР±РѕР¶РґР°РµРј РїР°РјСЏС‚СЊ, РєРѕС‚РѕСЂСѓСЋ РІС‹РґРµР»РёР»Р° С„СѓРЅРєС†РёСЏ FormatMessage
 	if (BKBLastError!=(DWORD)0)
 	{
 			LocalFree( BKBStringError );
 	}
 
-	//Печатаем сообщение об ошибке (если возможно, на экран)
-	MessageBox(NULL,BKBMessage,"MH: сообщение об ошибке",MB_OK|MB_ICONINFORMATION );
-/*
-	//А также в файл 
-	FILE *fout;
-	fout=fopen("reperr.log","a");
+	//РџРµС‡Р°С‚Р°РµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ (РµСЃР»Рё РІРѕР·РјРѕР¶РЅРѕ, РЅР° СЌРєСЂР°РЅ)
+	MessageBox(NULL,BKBMessage,L"MH: СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ",MB_OK|MB_ICONINFORMATION );
 
-	time_t mytime = time(0); // not 'long' 
-
-	fprintf(fout,"****\n%s%s\n", ctime(&mytime), BKBMessage);
-	fflush(fout);
-	fclose(fout);
-	*/
 }
 
-// Для НЕсистемных ошибок (перегружена)
-// Реально не видел, где бы она использовалась
-void MHReportError(char *Error, HWND hwnd) 
+// Р”Р»СЏ РќР•СЃРёСЃС‚РµРјРЅС‹С… РѕС€РёР±РѕРє (РїРµСЂРµРіСЂСѓР¶РµРЅР°)
+// Р РµР°Р»СЊРЅРѕ РЅРµ РІРёРґРµР», РіРґРµ Р±С‹ РѕРЅР° РёСЃРїРѕР»СЊР·РѕРІР°Р»Р°СЃСЊ
+void MHReportError(TCHAR *Error, HWND hwnd) 
 {
-	//Печатаем сообщение об ошибке (если возможно, на экран)
-	MessageBox(hwnd,Error,"Непорядок!",MB_OK|MB_ICONINFORMATION );
+	//РџРµС‡Р°С‚Р°РµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ (РµСЃР»Рё РІРѕР·РјРѕР¶РЅРѕ, РЅР° СЌРєСЂР°РЅ)
+	MessageBox(hwnd,Error,L"РќРµРїРѕСЂСЏРґРѕРє!",MB_OK|MB_ICONINFORMATION );
 }

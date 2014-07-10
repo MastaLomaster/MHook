@@ -1,4 +1,4 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "hh4.h"
 #include "MHKeypad.h"
 #include "Settings.h"
@@ -16,7 +16,7 @@ extern HBRUSH green_brush, yellow_brush;
 
 static LONG X,Y,last_x_direction,last_y_direction;
 
-// Какие кнопки нажимать в зависимости от направлений x_direction+1, y_direction+1;
+// РљР°РєРёРµ РєРЅРѕРїРєРё РЅР°Р¶РёРјР°С‚СЊ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РЅР°РїСЂР°РІР»РµРЅРёР№ x_direction+1, y_direction+1;
 static int button_pressed[3][3]=
 {
 	{7,6,5},
@@ -29,110 +29,110 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 	int position;
 	LONG x_direction=0,y_direction=0;
 		
-	// При нажатой правой кнопке мыши не передаём её движения в MHVector,
-	// НО! продолжаем отслеживать last_x и last_y, не сбрасывая initialized! 
-	if((initialized)&&(!rbutton_pressed)) // известно последнее положение мыши, правая кнопка не нажата
+	// РџСЂРё РЅР°Р¶Р°С‚РѕР№ РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ РјС‹С€Рё РЅРµ РїРµСЂРµРґР°С‘Рј РµС‘ РґРІРёР¶РµРЅРёСЏ РІ MHVector,
+	// РќРћ! РїСЂРѕРґРѕР»Р¶Р°РµРј РѕС‚СЃР»РµР¶РёРІР°С‚СЊ last_x Рё last_y, РЅРµ СЃР±СЂР°СЃС‹РІР°СЏ initialized! 
+	if((initialized)&&(!rbutton_pressed)) // РёР·РІРµСЃС‚РЅРѕ РїРѕСЃР»РµРґРЅРµРµ РїРѕР»РѕР¶РµРЅРёРµ РјС‹С€Рё, РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РЅРµ РЅР°Р¶Р°С‚Р°
 	{
 		dx=(_x-last_x);
 		dy=(_y-last_y);
 
-		// Может, пятую кнопку можно нажать?
+		// РњРѕР¶РµС‚, РїСЏС‚СѓСЋ РєРЅРѕРїРєСѓ РјРѕР¶РЅРѕ РЅР°Р¶Р°С‚СЊ?
 		if(MHSettings::flag_enable_speed_button) OnFastMove(dx,dy);
 
 		X+=dx; Y+=dy;
 		
-		// А может в два движения? (ось X не должна работать в режиме 3)
+		// Рђ РјРѕР¶РµС‚ РІ РґРІР° РґРІРёР¶РµРЅРёСЏ? (РѕСЃСЊ X РЅРµ РґРѕР»Р¶РЅР° СЂР°Р±РѕС‚Р°С‚СЊ РІ СЂРµР¶РёРјРµ 3)
 		if((true==MHSettings::flag_2moves)&&(0!=MHSettings::mode3axe))
 		{
 			DWORD thistime=timeGetTime();
 			if(0!=x_limitation)
 			{
-				if((0==last_x_direction)&&(thistime-steps2timeout>50)) // Можно снимать ограничения, выждали 100 мс в середине
+				if((0==last_x_direction)&&(thistime-steps2timeout>50)) // РњРѕР¶РЅРѕ СЃРЅРёРјР°С‚СЊ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ, РІС‹Р¶РґР°Р»Рё 100 РјСЃ РІ СЃРµСЂРµРґРёРЅРµ
 				{
 					x_limitation=0;
 				}
-				else	// Ограничения продолжают действовать, таймер перевзводится, так как мышь двигалась
+				else	// РћРіСЂР°РЅРёС‡РµРЅРёСЏ РїСЂРѕРґРѕР»Р¶Р°СЋС‚ РґРµР№СЃС‚РІРѕРІР°С‚СЊ, С‚Р°Р№РјРµСЂ РїРµСЂРµРІР·РІРѕРґРёС‚СЃСЏ, С‚Р°Рє РєР°Рє РјС‹С€СЊ РґРІРёРіР°Р»Р°СЃСЊ
 				{
 					steps2timeout=thistime;
-					// При действующих ограничпениях не давать уходить Х 
+					// РџСЂРё РґРµР№СЃС‚РІСѓСЋС‰РёС… РѕРіСЂР°РЅРёС‡РїРµРЅРёСЏС… РЅРµ РґР°РІР°С‚СЊ СѓС…РѕРґРёС‚СЊ РҐ 
 					if((X<0)&&(x_limitation>0)) X=0;
 					if((X>0)&&(x_limitation<0)) X=0;
 				}
 			}
-		} // движения в два шага
+		} // РґРІРёР¶РµРЅРёСЏ РІ РґРІР° С€Р°РіР°
 
 
-		if(0==MHSettings::mode3axe) // Не работает ли ось Х по режиму 3?
+		if(0==MHSettings::mode3axe) // РќРµ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РѕСЃСЊ РҐ РїРѕ СЂРµР¶РёРјСѓ 3?
 		{
-			position=MHVector::NewValues(dx,0); // Движение по оси Y не передаём
+			position=MHVector::NewValues(dx,0); // Р”РІРёР¶РµРЅРёРµ РїРѕ РѕСЃРё Y РЅРµ РїРµСЂРµРґР°С‘Рј
 
-			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
+			if(0<=position) // -2=РјС‹С€СЊ РїРѕРґРІРёРЅСѓР»Р°СЃСЊ РЅР° РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕРµ СЂР°СЃС‚РѕСЏРЅРёРµ, -1= РЅР°РїСЂР°РІР»РµРЅРёРµ РЅРµ РёР·РјРµРЅРёР»РѕСЃСЊ
 			{
-				// По оси x возможно только 2 направления: 2 и 6
+				// РџРѕ РѕСЃРё x РІРѕР·РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ 2 РЅР°РїСЂР°РІР»РµРЅРёСЏ: 2 Рё 6
 				if(2==position) x_direction=1;
 				else x_direction=-1;
 				
-				position_mem=position; // нужно ли отпустить кнопку по таймеру?
+				position_mem=position; // РЅСѓР¶РЅРѕ Р»Рё РѕС‚РїСѓСЃС‚РёС‚СЊ РєРЅРѕРїРєСѓ РїРѕ С‚Р°Р№РјРµСЂСѓ?
 			}
-			else // сохраняем направление по x
+			else // СЃРѕС…СЂР°РЅСЏРµРј РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ x
 			{
 				x_direction=last_x_direction;
 			}
 
-			// Таймер взводим заново при любом движении мыши, если было хоть что-то нажато ранее
-			// то есть -1!=position_mem
+			// РўР°Р№РјРµСЂ РІР·РІРѕРґРёРј Р·Р°РЅРѕРІРѕ РїСЂРё Р»СЋР±РѕРј РґРІРёР¶РµРЅРёРё РјС‹С€Рё, РµСЃР»Рё Р±С‹Р»Рѕ С…РѕС‚СЊ С‡С‚Рѕ-С‚Рѕ РЅР°Р¶Р°С‚Рѕ СЂР°РЅРµРµ
+			// С‚Рѕ РµСЃС‚СЊ -1!=position_mem
 			if(-1!=position_mem)
 			{
 				last_time=timeGetTime();
 				SetTimer(MHhwnd,1,MHSettings::timeout_after_move,NULL);
 			}
 		}
-		else // Ось X работает в режиме 4
+		else // РћСЃСЊ X СЂР°Р±РѕС‚Р°РµС‚ РІ СЂРµР¶РёРјРµ 4
 		{
-			// Находим направление по оси x
-			if(X<-3*MHSettings::deadx/2) // вышло за границы слева
+			// РќР°С…РѕРґРёРј РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ РѕСЃРё x
+			if(X<-3*MHSettings::deadx/2) // РІС‹С€Р»Рѕ Р·Р° РіСЂР°РЅРёС†С‹ СЃР»РµРІР°
 			{
 				x_direction=-1;
 				X=-3*MHSettings::deadx/2;
 			}
-			else if(X<-MHSettings::deadx/2) // в пределах границ, направление -1
+			else if(X<-MHSettings::deadx/2) // РІ РїСЂРµРґРµР»Р°С… РіСЂР°РЅРёС†, РЅР°РїСЂР°РІР»РµРЅРёРµ -1
 			{
 				x_direction=-1;
 			}
-			else if(X>3*MHSettings::deadx/2) // вышло за границы справа
+			else if(X>3*MHSettings::deadx/2) // РІС‹С€Р»Рѕ Р·Р° РіСЂР°РЅРёС†С‹ СЃРїСЂР°РІР°
 			{
 				x_direction=1;
 				X=3*MHSettings::deadx/2;
 			}
-			else if(X>MHSettings::deadx/2) // в пределах границ, направление 1
+			else if(X>MHSettings::deadx/2) // РІ РїСЂРµРґРµР»Р°С… РіСЂР°РЅРёС†, РЅР°РїСЂР°РІР»РµРЅРёРµ 1
 			{
 				x_direction=1;
 			}
-			else x_direction=0; // в пределах мертвой зоны
+			else x_direction=0; // РІ РїСЂРµРґРµР»Р°С… РјРµСЂС‚РІРѕР№ Р·РѕРЅС‹
 
 			if((true==MHSettings::flag_2moves)&&(0!=x_direction)) x_limitation=x_direction;
 		}
 
-		if(1==MHSettings::mode3axe) // Не работает ли ось Y по режиму 3?
+		if(1==MHSettings::mode3axe) // РќРµ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РѕСЃСЊ Y РїРѕ СЂРµР¶РёРјСѓ 3?
 		{
-			position=MHVector::NewValues(0,dy); // Движение по оси X не передаём
+			position=MHVector::NewValues(0,dy); // Р”РІРёР¶РµРЅРёРµ РїРѕ РѕСЃРё X РЅРµ РїРµСЂРµРґР°С‘Рј
 
-			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
+			if(0<=position) // -2=РјС‹С€СЊ РїРѕРґРІРёРЅСѓР»Р°СЃСЊ РЅР° РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕРµ СЂР°СЃС‚РѕСЏРЅРёРµ, -1= РЅР°РїСЂР°РІР»РµРЅРёРµ РЅРµ РёР·РјРµРЅРёР»РѕСЃСЊ
 			{
-				// По оси y возможно только 2 направления: 0 и 4
-				// Здесь внимание на знаки!!!
+				// РџРѕ РѕСЃРё y РІРѕР·РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ 2 РЅР°РїСЂР°РІР»РµРЅРёСЏ: 0 Рё 4
+				// Р—РґРµСЃСЊ РІРЅРёРјР°РЅРёРµ РЅР° Р·РЅР°РєРё!!!
 				if(0==position) y_direction=-1;
 				else y_direction=1;
 				
-				position_mem=position; // нужно ли отпустить кнопку по таймеру?
+				position_mem=position; // РЅСѓР¶РЅРѕ Р»Рё РѕС‚РїСѓСЃС‚РёС‚СЊ РєРЅРѕРїРєСѓ РїРѕ С‚Р°Р№РјРµСЂСѓ?
 			}
-			else // сохраняем направление по x
+			else // СЃРѕС…СЂР°РЅСЏРµРј РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ x
 			{
 				y_direction=last_y_direction;
 			}
 
-			// Таймер взводим заново при любом движении мыши, если было хоть что-то нажато ранее
-			// то есть -1!=position_mem
+			// РўР°Р№РјРµСЂ РІР·РІРѕРґРёРј Р·Р°РЅРѕРІРѕ РїСЂРё Р»СЋР±РѕРј РґРІРёР¶РµРЅРёРё РјС‹С€Рё, РµСЃР»Рё Р±С‹Р»Рѕ С…РѕС‚СЊ С‡С‚Рѕ-С‚Рѕ РЅР°Р¶Р°С‚Рѕ СЂР°РЅРµРµ
+			// С‚Рѕ РµСЃС‚СЊ -1!=position_mem
 			if(-1!=position_mem)
 			{
 				last_time=timeGetTime();
@@ -141,36 +141,36 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 		}
 		else
 		{
-			// Находим направление по оси y
-			if(Y<-3*MHSettings::deady/2) // вышло за границы слева
+			// РќР°С…РѕРґРёРј РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ РѕСЃРё y
+			if(Y<-3*MHSettings::deady/2) // РІС‹С€Р»Рѕ Р·Р° РіСЂР°РЅРёС†С‹ СЃР»РµРІР°
 			{
 				y_direction=-1;
 				Y=-3*MHSettings::deady/2;
 			}
-			else if(Y<-MHSettings::deady/2) // в пределах границ, направление -1
+			else if(Y<-MHSettings::deady/2) // РІ РїСЂРµРґРµР»Р°С… РіСЂР°РЅРёС†, РЅР°РїСЂР°РІР»РµРЅРёРµ -1
 			{
 				y_direction=-1;
 			}
-			else if(Y>3*MHSettings::deady/2) // вышло за границы справа
+			else if(Y>3*MHSettings::deady/2) // РІС‹С€Р»Рѕ Р·Р° РіСЂР°РЅРёС†С‹ СЃРїСЂР°РІР°
 			{
 				y_direction=1;
 				Y=3*MHSettings::deady/2;
 			}
-			else if(Y>MHSettings::deady/2) // в пределах границ, направление 1
+			else if(Y>MHSettings::deady/2) // РІ РїСЂРµРґРµР»Р°С… РіСЂР°РЅРёС†, РЅР°РїСЂР°РІР»РµРЅРёРµ 1
 			{
 				y_direction=1;
 			}
-			else y_direction=0; // в пределах мертвой зоны
+			else y_direction=0; // РІ РїСЂРµРґРµР»Р°С… РјРµСЂС‚РІРѕР№ Р·РѕРЅС‹
 		}
 /*
-		// А может в два движения? (ось X не должна работать в режиме 3)
+		// Рђ РјРѕР¶РµС‚ РІ РґРІР° РґРІРёР¶РµРЅРёСЏ? (РѕСЃСЊ X РЅРµ РґРѕР»Р¶РЅР° СЂР°Р±РѕС‚Р°С‚СЊ РІ СЂРµР¶РёРјРµ 3)
 		if((true==MHSettings::flag_2moves)&&(0!=MHSettings::mode3axe))
 		{
-			if((1==last_x_direction)&&(1!=x_direction)) last_right=timeGetTime(); // Ушли из правого положения в это время
-			if((-1==last_x_direction)&&(-1!=x_direction)) last_left=timeGetTime(); // Ушли из левого положения в это время
+			if((1==last_x_direction)&&(1!=x_direction)) last_right=timeGetTime(); // РЈС€Р»Рё РёР· РїСЂР°РІРѕРіРѕ РїРѕР»РѕР¶РµРЅРёСЏ РІ СЌС‚Рѕ РІСЂРµРјСЏ
+			if((-1==last_x_direction)&&(-1!=x_direction)) last_left=timeGetTime(); // РЈС€Р»Рё РёР· Р»РµРІРѕРіРѕ РїРѕР»РѕР¶РµРЅРёСЏ РІ СЌС‚Рѕ РІСЂРµРјСЏ
 
-			// Можно ли занять новое положение? Прошло ли 100 мс с последнего движения?
-			if((-1==x_direction)&&(-1!=last_x_direction)) // Рано ещё, иди в центр и жди без движения 100 мс
+			// РњРѕР¶РЅРѕ Р»Рё Р·Р°РЅСЏС‚СЊ РЅРѕРІРѕРµ РїРѕР»РѕР¶РµРЅРёРµ? РџСЂРѕС€Р»Рѕ Р»Рё 100 РјСЃ СЃ РїРѕСЃР»РµРґРЅРµРіРѕ РґРІРёР¶РµРЅРёСЏ?
+			if((-1==x_direction)&&(-1!=last_x_direction)) // Р Р°РЅРѕ РµС‰С‘, РёРґРё РІ С†РµРЅС‚СЂ Рё Р¶РґРё Р±РµР· РґРІРёР¶РµРЅРёСЏ 100 РјСЃ
 			{
 				X=0;
 				x_direction=0;
@@ -178,20 +178,20 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 			}
 		}
 */		
-		if((last_y_direction!=y_direction)||(last_x_direction!=x_direction)) // Нажатые кнопки поменялись
+		if((last_y_direction!=y_direction)||(last_x_direction!=x_direction)) // РќР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё РїРѕРјРµРЅСЏР»РёСЃСЊ
 		{
 			position=button_pressed[x_direction+1][y_direction+1];
 			if(-1==position) 
 			{
-				MHKeypad::Reset(); // Отпускаем нажатые кнопки
-				// Почему-то Reset не включает перерисовку
+				MHKeypad::Reset(); // РћС‚РїСѓСЃРєР°РµРј РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
+				// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 				//InvalidateRect(MHhwnd,NULL,TRUE);
 			}
 			else MHKeypad::Press(position,true);
 		}
 	}
 
-	// Для рисования квадратиков это надо делать всегда
+	// Р”Р»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚РёРєРѕРІ СЌС‚Рѕ РЅР°РґРѕ РґРµР»Р°С‚СЊ РІСЃРµРіРґР°
 	InvalidateRect(MHhwnd,NULL,TRUE);
 
 	if(!initialized) initialized=true;
@@ -207,7 +207,7 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 
 
 #ifdef _DEBUG
-	// Покажите абсолютные значения мвшиных сообщений
+	// РџРѕРєР°Р¶РёС‚Рµ Р°Р±СЃРѕР»СЋС‚РЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РјРІС€РёРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 	//sprintf(debug_buf,"dx: %d  dy: %d\n", dx,dy);
 	//OutputDebugString(debug_buf);
 #endif
@@ -216,25 +216,25 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 bool MHookHandler4::OnRDown()
 {
 	rbutton_pressed=true;
-	MHKeypad::Reset(); // Отпускаем нажатые кнопки
+	MHKeypad::Reset(); // РћС‚РїСѓСЃРєР°РµРј РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
 	X=0;Y=0;
 	last_x_direction=0;
 	last_y_direction=0;
-	// Почему-то Reset не включает перерисовку
+	// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 	InvalidateRect(MHhwnd,NULL,TRUE);
-	return true; // подавляйте правый клик
+	return true; // РїРѕРґР°РІР»СЏР№С‚Рµ РїСЂР°РІС‹Р№ РєР»РёРє
 }
 
 bool MHookHandler4::OnRUp()
 {
 	rbutton_pressed=false;
-	// Начинаем новый отсчет движений
+	// РќР°С‡РёРЅР°РµРј РЅРѕРІС‹Р№ РѕС‚СЃС‡РµС‚ РґРІРёР¶РµРЅРёР№
 	MHVector::Reset();
 	X=0;Y=0;
 	last_x_direction=0;
 	last_y_direction=0;
 	//initialized=false;
-	return true; // подавляйте правый клик
+	return true; // РїРѕРґР°РІР»СЏР№С‚Рµ РїСЂР°РІС‹Р№ РєР»РёРє
 }
 
 void MHookHandler4::OnDraw(HDC hdc, LONG window_size)
@@ -242,11 +242,11 @@ void MHookHandler4::OnDraw(HDC hdc, LONG window_size)
 	RECT rect;
 	LONG quad_x,quad_y;
 
-	// Газ-жёлтым, поворот-зелёным
-	if(1!=MHSettings::mode3axe) // Не работает ли ось Y по режиму 3?
+	// Р“Р°Р·-Р¶С‘Р»С‚С‹Рј, РїРѕРІРѕСЂРѕС‚-Р·РµР»С‘РЅС‹Рј
+	if(1!=MHSettings::mode3axe) // РќРµ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РѕСЃСЊ Y РїРѕ СЂРµР¶РёРјСѓ 3?
 	{
 		quad_x=0;
-		//quad_y=Y*window_size/2/(MHSettings::deady*2); // Сокращаем 
+		//quad_y=Y*window_size/2/(MHSettings::deady*2); // РЎРѕРєСЂР°С‰Р°РµРј 
 		quad_y=Y*window_size/MHSettings::deady/3; 
 		rect.left=(LONG)(window_size/2+quad_x-10);
 		rect.top=(LONG)(window_size/2+quad_y-10);
@@ -255,8 +255,8 @@ void MHookHandler4::OnDraw(HDC hdc, LONG window_size)
 		FillRect(hdc,&rect,yellow_brush);
 	}
 
-	// поворот
-	if(0!=MHSettings::mode3axe) // Не работает ли ось X по режиму 3?
+	// РїРѕРІРѕСЂРѕС‚
+	if(0!=MHSettings::mode3axe) // РќРµ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РѕСЃСЊ X РїРѕ СЂРµР¶РёРјСѓ 3?
 	{
 		quad_y=0;
 		quad_x=X*window_size/MHSettings::deadx/3; 
@@ -273,52 +273,52 @@ void MHookHandler4::OnTimer()
 {
 	int position;
 
-	if(-1==position_mem) return; // Клавиша не нажата, делать нечего
+	if(-1==position_mem) return; // РљР»Р°РІРёС€Р° РЅРµ РЅР°Р¶Р°С‚Р°, РґРµР»Р°С‚СЊ РЅРµС‡РµРіРѕ
 
-	// Проверяем, а не рудимент ли это, оставшийся в очереди сообщений?
-	// Для этого проверим, действительно ли истекло нужное время
+	// РџСЂРѕРІРµСЂСЏРµРј, Р° РЅРµ СЂСѓРґРёРјРµРЅС‚ Р»Рё СЌС‚Рѕ, РѕСЃС‚Р°РІС€РёР№СЃСЏ РІ РѕС‡РµСЂРµРґРё СЃРѕРѕР±С‰РµРЅРёР№?
+	// Р”Р»СЏ СЌС‚РѕРіРѕ РїСЂРѕРІРµСЂРёРј, РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ Р»Рё РёСЃС‚РµРєР»Рѕ РЅСѓР¶РЅРѕРµ РІСЂРµРјСЏ
 	DWORD time_now=timeGetTime();
 	if(time_now-last_time<MHSettings::timeout_after_move) return;
 
-	// Действительно, время отпустить клавишу!
-	// !!! Здесь не так, как в режиме 3 !!! Отпускаем только кнопки на одной оси !!!
+	// Р”РµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ, РІСЂРµРјСЏ РѕС‚РїСѓСЃС‚РёС‚СЊ РєР»Р°РІРёС€Сѓ!
+	// !!! Р—РґРµСЃСЊ РЅРµ С‚Р°Рє, РєР°Рє РІ СЂРµР¶РёРјРµ 3 !!! РћС‚РїСѓСЃРєР°РµРј С‚РѕР»СЊРєРѕ РєРЅРѕРїРєРё РЅР° РѕРґРЅРѕР№ РѕСЃРё !!!
 	//MHKeypad::Press(position_mem,false);
-	if(0==MHSettings::mode3axe) // Не работает ли ось Х по режиму 3?
+	if(0==MHSettings::mode3axe) // РќРµ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РѕСЃСЊ РҐ РїРѕ СЂРµР¶РёРјСѓ 3?
 	{
-		// теперь x_direction=0;
-		if(0!=last_x_direction) // направление по оси X поменялось
+		// С‚РµРїРµСЂСЊ x_direction=0;
+		if(0!=last_x_direction) // РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ РѕСЃРё X РїРѕРјРµРЅСЏР»РѕСЃСЊ
 		{
 			last_x_direction=0;
 			position=button_pressed[last_x_direction+1][last_y_direction+1];
 			if(-1==position) 
 			{
-				MHKeypad::Reset(); // Отпускаем нажатые кнопки
-				// Почему-то Reset не включает перерисовку
+				MHKeypad::Reset(); // РћС‚РїСѓСЃРєР°РµРј РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
+				// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 				//InvalidateRect(MHhwnd,NULL,TRUE);
 			}
 			else MHKeypad::Press(position,true);
 		}
 	}
 
-	if(1==MHSettings::mode3axe) // А может работает ось Y по режиму 3?
+	if(1==MHSettings::mode3axe) // Рђ РјРѕР¶РµС‚ СЂР°Р±РѕС‚Р°РµС‚ РѕСЃСЊ Y РїРѕ СЂРµР¶РёРјСѓ 3?
 	{
-		// теперь y_direction=0;
-		if(0!=last_y_direction) // направление по оси Y поменялось
+		// С‚РµРїРµСЂСЊ y_direction=0;
+		if(0!=last_y_direction) // РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕ РѕСЃРё Y РїРѕРјРµРЅСЏР»РѕСЃСЊ
 		{
 			last_y_direction=0;
 			position=button_pressed[last_x_direction+1][last_y_direction+1];
 			if(-1==position) 
 			{
-				MHKeypad::Reset(); // Отпускаем нажатые кнопки
-				// Почему-то Reset не включает перерисовку
+				MHKeypad::Reset(); // РћС‚РїСѓСЃРєР°РµРј РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
+				// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 				//InvalidateRect(MHhwnd,NULL,TRUE);
 			}
 			else MHKeypad::Press(position,true);
 		}
 	}
 
-	MHVector::Reset(); // Вот это обязательно, иначе в том же направлении мышь не нажмёт клавишу
-	// Почему-то Reset не включает перерисовку
+	MHVector::Reset(); // Р’РѕС‚ СЌС‚Рѕ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ, РёРЅР°С‡Рµ РІ С‚РѕРј Р¶Рµ РЅР°РїСЂР°РІР»РµРЅРёРё РјС‹С€СЊ РЅРµ РЅР°Р¶РјС‘С‚ РєР»Р°РІРёС€Сѓ
+	// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 	InvalidateRect(MHhwnd,NULL,TRUE);
 
 	position_mem=-1;

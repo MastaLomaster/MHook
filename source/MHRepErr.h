@@ -1,8 +1,10 @@
-// Выдвет сообщение о (системных и несистемных) ошибках
+п»ї// Р’С‹РґРІРµС‚ СЃРѕРѕР±С‰РµРЅРёРµ Рѕ (СЃРёСЃС‚РµРјРЅС‹С… Рё РЅРµСЃРёСЃС‚РµРјРЅС‹С…) РѕС€РёР±РєР°С…
 #ifndef __MH_REPERR
 #define __MH_REPERR
 
-void MHReportError(char *SourceFile, char *FuncName, int LineNumber);
-void MHReportError(char *Error, HWND hwnd=NULL); // Для НЕсистемных ошибок (перегружена)
+#include "WIDEFILE.h"
+
+void MHReportError(TCHAR *SourceFile, TCHAR *FuncName, int LineNumber);
+void MHReportError(TCHAR *Error, HWND hwnd=NULL); // Р”Р»СЏ РќР•СЃРёСЃС‚РµРјРЅС‹С… РѕС€РёР±РѕРє (РїРµСЂРµРіСЂСѓР¶РµРЅР°)
 
 #endif

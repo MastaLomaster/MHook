@@ -1,4 +1,4 @@
-// Обработчик хука, режим 4
+п»ї// РћР±СЂР°Р±РѕС‚С‡РёРє С…СѓРєР°, СЂРµР¶РёРј 4
 #ifndef __MH_HOOKHANDLER4
 #define __MH_HOOKHANDLER4
 
@@ -11,8 +11,8 @@ public:
 	virtual void OnMouseMove(LONG _x, LONG _y);
 	virtual bool OnRDown();
 	virtual bool OnRUp();
-	virtual void OnDraw(HDC hdc, LONG window_size); // Нужна в 4 режиме для рисования квадратиков
-	virtual void OnTimer(); // Нужен, если одна из осей работает по режиму 3
+	virtual void OnDraw(HDC hdc, LONG window_size); // РќСѓР¶РЅР° РІ 4 СЂРµР¶РёРјРµ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚РёРєРѕРІ
+	virtual void OnTimer(); // РќСѓР¶РµРЅ, РµСЃР»Рё РѕРґРЅР° РёР· РѕСЃРµР№ СЂР°Р±РѕС‚Р°РµС‚ РїРѕ СЂРµР¶РёРјСѓ 3
 protected:
 	DWORD last_time, steps2timeout;
 	LONG x_limitation;

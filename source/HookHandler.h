@@ -1,4 +1,4 @@
-// Обработчик хука, виртуальный класс
+п»ї// РћР±СЂР°Р±РѕС‚С‡РёРє С…СѓРєР°, РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РєР»Р°СЃСЃ
 #ifndef __MH_HOOKHANDLER
 #define __MH_HOOKHANDLER
 
@@ -10,25 +10,25 @@ public:
 	MHookHandler():rbutton_pressed(false),initialized(false),position_mem(-1),mouse_path_squared(0){};
 	virtual void OnMouseMove(LONG _x, LONG _y)=0;
 	virtual void OnMouseScroll(LONG _x, LONG _y);
-	virtual bool OnRDown()=0; // возвращает, нужно ли подавлять правый клик
+	virtual bool OnRDown()=0; // РІРѕР·РІСЂР°С‰Р°РµС‚, РЅСѓР¶РЅРѕ Р»Рё РїРѕРґР°РІР»СЏС‚СЊ РїСЂР°РІС‹Р№ РєР»РёРє
 	virtual bool OnRUp()=0;
 	virtual void OnLDown();
 	virtual void OnLUp();
-	virtual int GetPosition() { return MHKeypad::GetPosition(); } // по умолчанию возвращаем нажатую клавишу
+	virtual int GetPosition() { return MHKeypad::GetPosition(); } // РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІРѕР·РІСЂР°С‰Р°РµРј РЅР°Р¶Р°С‚СѓСЋ РєР»Р°РІРёС€Сѓ
 	virtual void OnTimer(){};
-	virtual void OnDraw(HDC hdc, LONG window_size){}; // Нужна в 4 режиме для рисования квадратиков
+	virtual void OnDraw(HDC hdc, LONG window_size){}; // РќСѓР¶РЅР° РІ 4 СЂРµР¶РёРјРµ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚РёРєРѕРІ
 	virtual void Halt(){};
 	void HaltGeneral(){	rbutton_pressed=false; initialized=false; position_mem=-1; mouse_path_squared=0; }
-	void Deinitialize(){initialized=false;} // Нужно, когда мы временно не обрабатываем перемещения мыши (пауза, скролл)
+	void Deinitialize(){initialized=false;} // РќСѓР¶РЅРѕ, РєРѕРіРґР° РјС‹ РІСЂРµРјРµРЅРЅРѕ РЅРµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РїРµСЂРµРјРµС‰РµРЅРёСЏ РјС‹С€Рё (РїР°СѓР·Р°, СЃРєСЂРѕР»Р»)
 
-	void TopLeftCornerTimer(); // Тут левая кнопка мыши преображается
-	void OnFastMove(LONG _dx, LONG _dy); // Определяет, был ли рывок мыши
+	void TopLeftCornerTimer(); // РўСѓС‚ Р»РµРІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё РїСЂРµРѕР±СЂР°Р¶Р°РµС‚СЃСЏ
+	void OnFastMove(LONG _dx, LONG _dy); // РћРїСЂРµРґРµР»СЏРµС‚, Р±С‹Р» Р»Рё СЂС‹РІРѕРє РјС‹С€Рё
 	
 protected:
 	bool rbutton_pressed, initialized;
 	LONG dx,dy,last_x,last_y;
 	int position_mem;
-	DWORD last_button5_time; // для нажатия на 5 кнопку при быстром движении мыши
+	DWORD last_button5_time; // РґР»СЏ РЅР°Р¶Р°С‚РёСЏ РЅР° 5 РєРЅРѕРїРєСѓ РїСЂРё Р±С‹СЃС‚СЂРѕРј РґРІРёР¶РµРЅРёРё РјС‹С€Рё
 	LONG mouse_path_squared;
 };
 

@@ -1,29 +1,29 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "MHKeypad.h"
 #include "Settings.h"
 #include "MHRepErr.h"
 
 #ifdef _DEBUG
 #include <stdio.h>
-static char debug_buf[4096];
+static TCHAR debug_buf[4096];
 #endif
 
 extern HWND		MHhwnd;
 
 int MHKeypad::keypad_position=-1;
-// Изначально стрелки
+// РР·РЅР°С‡Р°Р»СЊРЅРѕ СЃС‚СЂРµР»РєРё
 WORD MHKeypad::scancode[15]={0xE048, 0xE04D, 0xE050, 0xE04B, 0x3B, 0x3B};
 
-// Для поиска глюков
+// Р”Р»СЏ РїРѕРёСЃРєР° РіР»СЋРєРѕРІ
 #ifdef _DEBUG
 static int button_pressed[15]={0};
 #endif
 
-// Таблица кодирования 8 направлений четырьмя клавишами
+// РўР°Р±Р»РёС†Р° РєРѕРґРёСЂРѕРІР°РЅРёСЏ 8 РЅР°РїСЂР°РІР»РµРЅРёР№ С‡РµС‚С‹СЂСЊРјСЏ РєР»Р°РІРёС€Р°РјРё
 int key8[8][4]=
 {
-	{1,0,0,0}, // 0-е направление = нулевая кнопка
-	{1,1,0,0}, // 1-е направление = кнопки 0 и 1
+	{1,0,0,0}, // 0-Рµ РЅР°РїСЂР°РІР»РµРЅРёРµ = РЅСѓР»РµРІР°СЏ РєРЅРѕРїРєР°
+	{1,1,0,0}, // 1-Рµ РЅР°РїСЂР°РІР»РµРЅРёРµ = РєРЅРѕРїРєРё 0 Рё 1
 	{0,1,0,0}, // 2
 	{0,1,1,0}, // 3
 	{0,0,1,0}, // 4
@@ -37,7 +37,7 @@ void MHKeypad::Init(WORD _scancode0, WORD _scancode1, WORD _scancode2, WORD _sca
 	WORD _scancode6, WORD _scancode7, WORD _scancode8, WORD _scancode9, WORD _scancode10,
 	WORD _scancode11, WORD _scancode12, WORD _scancode13, WORD _scancode14)
 {
-	if(-1!=keypad_position) Reset(); // Перед переинициализацией отпустить кнопки
+	if(-1!=keypad_position) Reset(); // РџРµСЂРµРґ РїРµСЂРµРёРЅРёС†РёР°Р»РёР·Р°С†РёРµР№ РѕС‚РїСѓСЃС‚РёС‚СЊ РєРЅРѕРїРєРё
 
 	scancode[0]=_scancode0;
 	scancode[1]=_scancode1;
@@ -59,23 +59,23 @@ void MHKeypad::Init(WORD _scancode0, WORD _scancode1, WORD _scancode2, WORD _sca
 }
 
 
-// Тупо нажимает-отжимает одну из 4 клавиш
+// РўСѓРїРѕ РЅР°Р¶РёРјР°РµС‚-РѕС‚Р¶РёРјР°РµС‚ РѕРґРЅСѓ РёР· 4 РєР»Р°РІРёС€
 void MHKeypad::Press4(int position, bool down, int shift)
 {
 #ifdef _DEBUG
 	//if((position<0)||(position>3)) 
-	if((position<0)||(position>10)) // Теперь бывает и 5, и 10 (на правой кнопке мыши) 
- 		MHReportError("Неверный аргумент у Press4");
+	if((position<0)||(position>10)) // РўРµРїРµСЂСЊ Р±С‹РІР°РµС‚ Рё 5, Рё 10 (РЅР° РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ РјС‹С€Рё) 
+ 		MHReportError(L"РќРµРІРµСЂРЅС‹Р№ Р°СЂРіСѓРјРµРЅС‚ Сѓ Press4");
 
 	if(down&&(1==button_pressed[position+shift])) 
-		MHReportError("Повторное нажатие");
+		MHReportError(L"РџРѕРІС‚РѕСЂРЅРѕРµ РЅР°Р¶Р°С‚РёРµ");
 
 	if(!down&&(0==button_pressed[position+shift])) 
-		MHReportError("Повторное отпускание");
+		MHReportError(L"РџРѕРІС‚РѕСЂРЅРѕРµ РѕС‚РїСѓСЃРєР°РЅРёРµ");
 	if(down) button_pressed[position+shift]=1; else button_pressed[position+shift]=0;
 #endif
 
-	// Спец-кнопка 0xFFFF игнорируется
+	// РЎРїРµС†-РєРЅРѕРїРєР° 0xFFFF РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ
 	if(0xFFFF==scancode[position+shift]) return;
 
 	INPUT input={0};
@@ -86,7 +86,7 @@ void MHKeypad::Press4(int position, bool down, int shift)
 		input.ki.dwFlags|=KEYEVENTF_KEYUP;
 	}
 
-	if(scancode[position+shift]>0xFF) // Этот скан-код из двух байтов, где первый - E0
+	if(scancode[position+shift]>0xFF) // Р­С‚РѕС‚ СЃРєР°РЅ-РєРѕРґ РёР· РґРІСѓС… Р±Р°Р№С‚РѕРІ, РіРґРµ РїРµСЂРІС‹Р№ - E0
 	{
 		input.ki.dwFlags|=KEYEVENTF_EXTENDEDKEY;
 	}
@@ -95,7 +95,7 @@ void MHKeypad::Press4(int position, bool down, int shift)
 	SendInput(1,&input,sizeof(INPUT));
 
 #ifdef _DEBUG
-	sprintf(debug_buf,"%d %d %d %d %d %d  %d %d %d %d  %d  %d %d %d %d\n",
+	swprintf_s(debug_buf,_countof(debug_buf),L"%d %d %d %d %d %d  %d %d %d %d  %d  %d %d %d %d\r\n",
 		button_pressed[0],button_pressed[1],button_pressed[2],button_pressed[3],button_pressed[4],
 		button_pressed[5],
 		button_pressed[6],button_pressed[7],button_pressed[8],button_pressed[9],button_pressed[10],
@@ -105,17 +105,17 @@ void MHKeypad::Press4(int position, bool down, int shift)
 }
 
 
-// Нажимает кнопку, но отжимает предыдущую нажатую, обрабатывает до 8 позиций
-// меняет keypad_position
-// переsрисовывает экран
+// РќР°Р¶РёРјР°РµС‚ РєРЅРѕРїРєСѓ, РЅРѕ РѕС‚Р¶РёРјР°РµС‚ РїСЂРµРґС‹РґСѓС‰СѓСЋ РЅР°Р¶Р°С‚СѓСЋ, РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РґРѕ 8 РїРѕР·РёС†РёР№
+// РјРµРЅСЏРµС‚ keypad_position
+// РїРµСЂРµsСЂРёСЃРѕРІС‹РІР°РµС‚ СЌРєСЂР°РЅ
 void MHKeypad::Press(int position, bool down, int shift)
 {
-	// Нажатые кнопки повторно не нажимаем, а отжатые - не отжимаем
+	// РќР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё РїРѕРІС‚РѕСЂРЅРѕ РЅРµ РЅР°Р¶РёРјР°РµРј, Р° РѕС‚Р¶Р°С‚С‹Рµ - РЅРµ РѕС‚Р¶РёРјР°РµРј
 	if(down && (position==keypad_position))
 	{
 #ifdef _DEBUG
-		//MHReportError("Нажали уже нажатую кнопку");
-		OutputDebugString("Нажали уже нажатую кнопку");
+		//MHReportError("РќР°Р¶Р°Р»Рё СѓР¶Рµ РЅР°Р¶Р°С‚СѓСЋ РєРЅРѕРїРєСѓ");
+		OutputDebugString(L"РќР°Р¶Р°Р»Рё СѓР¶Рµ РЅР°Р¶Р°С‚СѓСЋ РєРЅРѕРїРєСѓ");
 #endif
 		return;
 	}
@@ -123,8 +123,8 @@ void MHKeypad::Press(int position, bool down, int shift)
 	if(!down && (position!=keypad_position))
 	{
 #ifdef _DEBUG
-		//MHReportError("Отжали ненажатую кнопку");
-		OutputDebugString("Отжали ненажатую кнопку");
+		//MHReportError("РћС‚Р¶Р°Р»Рё РЅРµРЅР°Р¶Р°С‚СѓСЋ РєРЅРѕРїРєСѓ");
+		OutputDebugString(L"РћС‚Р¶Р°Р»Рё РЅРµРЅР°Р¶Р°С‚СѓСЋ РєРЅРѕРїРєСѓ");
 #endif
 		return;
 	}
@@ -132,8 +132,8 @@ void MHKeypad::Press(int position, bool down, int shift)
 	if(-1==position) 
 	{
 #ifdef _DEBUG
-//		MHReportError("Нажали кнопку -1");
-		OutputDebugString("Нажали кнопку -1");
+//		MHReportError("РќР°Р¶Р°Р»Рё РєРЅРѕРїРєСѓ -1");
+		OutputDebugString(L"РќР°Р¶Р°Р»Рё РєРЅРѕРїРєСѓ -1");
 #endif
 		return;
 	}
@@ -143,68 +143,68 @@ void MHKeypad::Press(int position, bool down, int shift)
 	{
 		if(true==down)
 		{
-			Reset(shift); // при нажатии отпустить все отсальные. А при отпускании не делать этого.
+			Reset(shift); // РїСЂРё РЅР°Р¶Р°С‚РёРё РѕС‚РїСѓСЃС‚РёС‚СЊ РІСЃРµ РѕС‚СЃР°Р»СЊРЅС‹Рµ. Рђ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РЅРµ РґРµР»Р°С‚СЊ СЌС‚РѕРіРѕ.
 			keypad_position=position;
-			//OutputDebugString("Нажали\n");
+			//OutputDebugString("РќР°Р¶Р°Р»Рё\n");
 		}
 		else 
 		{
-			//OutputDebugString("Отпустили\n");
+			//OutputDebugString("РћС‚РїСѓСЃС‚РёР»Рё\n");
 			keypad_position=-1;
 		}
 		Press4(position,down,shift);
 	}
-	else // 8 позиций, отпускаем до двух клавиш, нажимаем до двух клавиш
+	else // 8 РїРѕР·РёС†РёР№, РѕС‚РїСѓСЃРєР°РµРј РґРѕ РґРІСѓС… РєР»Р°РІРёС€, РЅР°Р¶РёРјР°РµРј РґРѕ РґРІСѓС… РєР»Р°РІРёС€
 	{
 		if(true==down)
 		{			
 			
 			for(int i=0;i<4;i++)
 			{
-				if(-1!=keypad_position) // сравниваем нажатое и новое направления по 4 клавишам
+				if(-1!=keypad_position) // СЃСЂР°РІРЅРёРІР°РµРј РЅР°Р¶Р°С‚РѕРµ Рё РЅРѕРІРѕРµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РїРѕ 4 РєР»Р°РІРёС€Р°Рј
 				{
-					if(key8[keypad_position][i]==key8[position][i]) continue; // Эту кнопку не меняем
+					if(key8[keypad_position][i]==key8[position][i]) continue; // Р­С‚Сѓ РєРЅРѕРїРєСѓ РЅРµ РјРµРЅСЏРµРј
 
-					if(1==key8[keypad_position][i]) Press4(i,false,shift); // отпускаем
-					else Press4(i,true,shift); // нажимаем
+					if(1==key8[keypad_position][i]) Press4(i,false,shift); // РѕС‚РїСѓСЃРєР°РµРј
+					else Press4(i,true,shift); // РЅР°Р¶РёРјР°РµРј
 				}
-				else // отжимать нечего, только нажимаем
+				else // РѕС‚Р¶РёРјР°С‚СЊ РЅРµС‡РµРіРѕ, С‚РѕР»СЊРєРѕ РЅР°Р¶РёРјР°РµРј
 				{
 					if(1==key8[position][i]) Press4(i,true,shift);
 				}
 			}
 			keypad_position=position;
 
-			//OutputDebugString("Нажали8\n");
+			//OutputDebugString("РќР°Р¶Р°Р»Рё8\n");
 		}
 		else 
 		{
-			//OutputDebugString("Отпустили8\n");
-			Reset(shift); // при нажатии отпустить все отсальные. А при отпускании не делать этого.
+			//OutputDebugString("РћС‚РїСѓСЃС‚РёР»Рё8\n");
+			Reset(shift); // РїСЂРё РЅР°Р¶Р°С‚РёРё РѕС‚РїСѓСЃС‚РёС‚СЊ РІСЃРµ РѕС‚СЃР°Р»СЊРЅС‹Рµ. Рђ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РЅРµ РґРµР»Р°С‚СЊ СЌС‚РѕРіРѕ.
 			keypad_position=-1;
 		}
-	} // 8 направлений
+	} // 8 РЅР°РїСЂР°РІР»РµРЅРёР№
 
-	// Перемещаем квадратик на экране
+	// РџРµСЂРµРјРµС‰Р°РµРј РєРІР°РґСЂР°С‚РёРє РЅР° СЌРєСЂР°РЅРµ
 	InvalidateRect(MHhwnd,NULL,TRUE);
 	
 }
 
 //====================================================================================
-// Сбросить все нажатые кнопки
+// РЎР±СЂРѕСЃРёС‚СЊ РІСЃРµ РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
 //====================================================================================
 void MHKeypad::Reset(int shift)
 {
 	if(4==MHSettings::GetNumPositions())
 	{
-		// Отжимаем одну кнопку
+		// РћС‚Р¶РёРјР°РµРј РѕРґРЅСѓ РєРЅРѕРїРєСѓ
 		if(-1!=keypad_position) Press4(keypad_position, false, shift);
 	}
-	else // когда 8 направлений движения
+	else // РєРѕРіРґР° 8 РЅР°РїСЂР°РІР»РµРЅРёР№ РґРІРёР¶РµРЅРёСЏ
 	{
 		switch(keypad_position)
 		{
-			// Отжимаем одну кнопку
+			// РћС‚Р¶РёРјР°РµРј РѕРґРЅСѓ РєРЅРѕРїРєСѓ
 		case 0:
 		case 2:
 		case 4:
@@ -213,23 +213,23 @@ void MHKeypad::Reset(int shift)
 			Press4(keypad_position/2, false, shift);
 			break;
 
-			// Отжимаем две кнопки
-		case 1: // нулевую и первую
+			// РћС‚Р¶РёРјР°РµРј РґРІРµ РєРЅРѕРїРєРё
+		case 1: // РЅСѓР»РµРІСѓСЋ Рё РїРµСЂРІСѓСЋ
 			Press4(0, false, shift);
 			Press4(1, false, shift);
 			break;
 
-		case 3: // первую и вторую
+		case 3: // РїРµСЂРІСѓСЋ Рё РІС‚РѕСЂСѓСЋ
 			Press4(1, false, shift);
 			Press4(2, false, shift);
 			break;
 	
-		case 5: // вторую и третью
+		case 5: // РІС‚РѕСЂСѓСЋ Рё С‚СЂРµС‚СЊСЋ
 			Press4(2, false, shift);
 			Press4(3, false, shift);
 			break;
 
-		case 7: // нулевую и третью
+		case 7: // РЅСѓР»РµРІСѓСЋ Рё С‚СЂРµС‚СЊСЋ
 			Press4(0, false, shift);
 			Press4(3, false, shift);
 			break;
@@ -240,29 +240,29 @@ void MHKeypad::Reset(int shift)
 }
 
 //=========================================================================
-// Для 8 разных клавиш (8 умений)
+// Р”Р»СЏ 8 СЂР°Р·РЅС‹С… РєР»Р°РІРёС€ (8 СѓРјРµРЅРёР№)
 //=========================================================================
 void MHKeypad::Press8(int position, bool down)
 {
 	if(true==down)
 	{
-		// сначала отпустим старую
+		// СЃРЅР°С‡Р°Р»Р° РѕС‚РїСѓСЃС‚РёРј СЃС‚Р°СЂСѓСЋ
 		if(keypad_position!=-1)
 		{
 			if(keypad_position>3) Press4(keypad_position-4,false,6);
 			else Press4(keypad_position,false,0);
 		}
 		keypad_position=position;
-		//OutputDebugString("Нажали\n");
+		//OutputDebugString("РќР°Р¶Р°Р»Рё\n");
 	}
 	else 
 	{
-		//OutputDebugString("Отпустили\n");
+		//OutputDebugString("РћС‚РїСѓСЃС‚РёР»Рё\n");
 		keypad_position=-1;
 	}
 	if(position>3) 	Press4(position-4,down,6);
 	else Press4(position,down,0);
 
-	// Перемещаем квадратик на экране
+	// РџРµСЂРµРјРµС‰Р°РµРј РєРІР°РґСЂР°С‚РёРє РЅР° СЌРєСЂР°РЅРµ
 	InvalidateRect(MHhwnd,NULL,TRUE);
 }

@@ -1,4 +1,4 @@
-// четыре клавиши, которые может нажимать. Возможно, две соседние
+п»ї// С‡РµС‚С‹СЂРµ РєР»Р°РІРёС€Рё, РєРѕС‚РѕСЂС‹Рµ РјРѕР¶РµС‚ РЅР°Р¶РёРјР°С‚СЊ. Р’РѕР·РјРѕР¶РЅРѕ, РґРІРµ СЃРѕСЃРµРґРЅРёРµ
 #ifndef __MH_KEYPAD
 #define __MH_KEYPAD
 
@@ -12,7 +12,7 @@ public:
 	static int GetPosition(){return keypad_position;};
 	static void Press(int position, bool down, int shift=0);
 	static void Press4(int position, bool down, int shift=0);
-	static void Press8(int position, bool down); // Для 8 умений
+	static void Press8(int position, bool down); // Р”Р»СЏ 8 СѓРјРµРЅРёР№
 
 protected:
 	static int keypad_position;

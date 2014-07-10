@@ -1,4 +1,4 @@
-// Обработчик хука, режим 1a
+п»ї// РћР±СЂР°Р±РѕС‚С‡РёРє С…СѓРєР°, СЂРµР¶РёРј 1a
 #ifndef __MH_HOOKHANDLER1a
 #define __MH_HOOKHANDLER1a
 

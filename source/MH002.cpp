@@ -1,4 +1,4 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "Bitmap.h"
 #include "Settings.h"
 
@@ -6,17 +6,17 @@ bool flag_inside_window=false;
 
 extern HHOOK handle;
 extern LONG screen_x, screen_y;
-extern int top_position; // Это в HookProc определяет, в каком углу экрана мы задержались.
+extern int top_position; // Р­С‚Рѕ РІ HookProc РѕРїСЂРµРґРµР»СЏРµС‚, РІ РєР°РєРѕРј СѓРіР»Сѓ СЌРєСЂР°РЅР° РјС‹ Р·Р°РґРµСЂР¶Р°Р»РёСЃСЊ.
 extern bool flag_left_button_waits;
 extern bool flag_right_button_waits;
 
-LONG quad_x=0,quad_y=0; // Координаты квадратика в окне
+LONG quad_x=0,quad_y=0; // РљРѕРѕСЂРґРёРЅР°С‚С‹ РєРІР°РґСЂР°С‚РёРєР° РІ РѕРєРЅРµ
 
 static TRACKMOUSEEVENT tme={sizeof(TRACKMOUSEEVENT),TME_LEAVE,0,HOVER_DEFAULT};
 
-// Традиционно оконная процедура в файле 002
+// РўСЂР°РґРёС†РёРѕРЅРЅРѕ РѕРєРѕРЅРЅР°СЏ РїСЂРѕС†РµРґСѓСЂР° РІ С„Р°Р№Р»Рµ 002
 //====================================================================================
-// Оконная процедура
+// РћРєРѕРЅРЅР°СЏ РїСЂРѕС†РµРґСѓСЂР°
 //====================================================================================
 LRESULT CALLBACK WndProc(HWND hwnd,
 						UINT message,
@@ -25,7 +25,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 {
 	switch (message)
 	{
-		// Пара событий, по которым мы определяем, находится ли мышь над окном
+		// РџР°СЂР° СЃРѕР±С‹С‚РёР№, РїРѕ РєРѕС‚РѕСЂС‹Рј РјС‹ РѕРїСЂРµРґРµР»СЏРµРј, РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё РјС‹С€СЊ РЅР°Рґ РѕРєРЅРѕРј
 		case WM_MOUSEMOVE:
 			if(!flag_inside_window)
 			{
@@ -39,21 +39,21 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			break;
 
 		case WM_CREATE:
-			// Инициализируем битмапы
+			// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р±РёС‚РјР°РїС‹
 			MHBitmap::Init(hwnd);
-			// Дополняем tme хендлером окна
+			// Р”РѕРїРѕР»РЅСЏРµРј tme С…РµРЅРґР»РµСЂРѕРј РѕРєРЅР°
 			tme.hwndTrack=hwnd;
-			// Содрано из интернета - так мы делаем окно прозрачным в белых его частях
+			// РЎРѕРґСЂР°РЅРѕ РёР· РёРЅС‚РµСЂРЅРµС‚Р° - С‚Р°Рє РјС‹ РґРµР»Р°РµРј РѕРєРЅРѕ РїСЂРѕР·СЂР°С‡РЅС‹Рј РІ Р±РµР»С‹С… РµРіРѕ С‡Р°СЃС‚СЏС…
 			//SetLayeredWindowAttributes(hwnd,RGB(255,255,255),NULL,LWA_COLORKEY);
-			// Нет, делаем вот так, а то мышь проваливается
+			// РќРµС‚, РґРµР»Р°РµРј РІРѕС‚ С‚Р°Рє, Р° С‚Рѕ РјС‹С€СЊ РїСЂРѕРІР°Р»РёРІР°РµС‚СЃСЏ
 			SetLayeredWindowAttributes(hwnd,NULL,255*70/100,LWA_ALPHA);
 
-			// В третьем режиме инициализируем таймер (это делается в HookHandler(3) при необходимости)
+			// Р’ С‚СЂРµС‚СЊРµРј СЂРµР¶РёРјРµ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј С‚Р°Р№РјРµСЂ (СЌС‚Рѕ РґРµР»Р°РµС‚СЃСЏ РІ HookHandler(3) РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё)
 			//if(3==MHSettings::mode) SetTimer(hwnd,1,MHSettings::timeout_after_move,NULL);
 			break;
 
-		case WM_DESTROY:	// Завершение программы
-			// Чистим за собой
+		case WM_DESTROY:	// Р—Р°РІРµСЂС€РµРЅРёРµ РїСЂРѕРіСЂР°РјРјС‹
+			// Р§РёСЃС‚РёРј Р·Р° СЃРѕР±РѕР№
 			if((3==MHSettings::mode)||(4==MHSettings::mode)||(1==MHSettings::mode)) KillTimer(hwnd,1);
 			KillTimer(hwnd,2);
 			KillTimer(hwnd,3);
@@ -67,47 +67,47 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 		case WM_TIMER:
 			switch(wparam)
 			{
-			case 1: // Таймер нажатых клавиш
-				if(MHSettings::hh) MHSettings::hh->OnTimer(); // Это на случай, если меняем режим, а события в очереди остались
+			case 1: // РўР°Р№РјРµСЂ РЅР°Р¶Р°С‚С‹С… РєР»Р°РІРёС€
+				if(MHSettings::hh) MHSettings::hh->OnTimer(); // Р­С‚Рѕ РЅР° СЃР»СѓС‡Р°Р№, РµСЃР»Рё РјРµРЅСЏРµРј СЂРµР¶РёРј, Р° СЃРѕР±С‹С‚РёСЏ РІ РѕС‡РµСЂРµРґРё РѕСЃС‚Р°Р»РёСЃСЊ
 				break;
 			
-			case 2: // Таймер угла экрана
-				KillTimer(hwnd,2); // Первым делом таймер прибить
+			case 2: // РўР°Р№РјРµСЂ СѓРіР»Р° СЌРєСЂР°РЅР°
+				KillTimer(hwnd,2); // РџРµСЂРІС‹Рј РґРµР»РѕРј С‚Р°Р№РјРµСЂ РїСЂРёР±РёС‚СЊ
 				switch(top_position)
 				{
 				case 0:
-					// Теперь смена позиция происходит только по выезду мыши из области!
+					// РўРµРїРµСЂСЊ СЃРјРµРЅР° РїРѕР·РёС†РёСЏ РїСЂРѕРёСЃС…РѕРґРёС‚ С‚РѕР»СЊРєРѕ РїРѕ РІС‹РµР·РґСѓ РјС‹С€Рё РёР· РѕР±Р»Р°СЃС‚Рё!
 					//top_position=-1;
 					if(MHSettings::hh) MHSettings::hh->TopLeftCornerTimer();
 					break;
 
 				case 1:
-					// Теперь смена позиция происходит только по выезду мыши из области!
+					// РўРµРїРµСЂСЊ СЃРјРµРЅР° РїРѕР·РёС†РёСЏ РїСЂРѕРёСЃС…РѕРґРёС‚ С‚РѕР»СЊРєРѕ РїРѕ РІС‹РµР·РґСѓ РјС‹С€Рё РёР· РѕР±Р»Р°СЃС‚Рё!
 					//top_position=-1; 
 					//if(MHSettings::SettingsDialogue(hwnd))
 					if(MHSettings::SettingsDialogue(NULL))
 					{
-						// Чистим за собой - возможно, излишне
+						// Р§РёСЃС‚РёРј Р·Р° СЃРѕР±РѕР№ - РІРѕР·РјРѕР¶РЅРѕ, РёР·Р»РёС€РЅРµ
 						if((3==MHSettings::mode)||(4==MHSettings::mode)||(1==MHSettings::mode)) KillTimer(hwnd,1);
 						MHKeypad::Reset();
 						UnhookWindowsHookEx(handle);
 						PostQuitMessage(0);
 					}
-					// Тут будет вывод диалога настроек
+					// РўСѓС‚ Р±СѓРґРµС‚ РІС‹РІРѕРґ РґРёР°Р»РѕРіР° РЅР°СЃС‚СЂРѕРµРє
 					break;
 				}
 				//Beep(450,100);
 				break;
 
 			case 3:
-				// Отпустить клавишу, которую нажала левая кнопка мыши
+				// РћС‚РїСѓСЃС‚РёС‚СЊ РєР»Р°РІРёС€Сѓ, РєРѕС‚РѕСЂСѓСЋ РЅР°Р¶Р°Р»Р° Р»РµРІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё
 				KillTimer(hwnd,3);
 				MHKeypad::Press4(5, false);
 				flag_left_button_waits=false;
 				break;
 
 			case 4:
-				// Отпустить клавишу, которую нажала правая кнопка мыши
+				// РћС‚РїСѓСЃС‚РёС‚СЊ РєР»Р°РІРёС€Сѓ, РєРѕС‚РѕСЂСѓСЋ РЅР°Р¶Р°Р»Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё
 				KillTimer(hwnd,4);
 				MHKeypad::Press4(10,false);
 				flag_right_button_waits=false;
@@ -126,7 +126,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			HDC hdc;
 			hdc=BeginPaint(hwnd,&ps);
 			
-			// Подсветить нажатые кнопки
+			// РџРѕРґСЃРІРµС‚РёС‚СЊ РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
 			MHBitmap::OnDraw(hdc,MHSettings::GetPosition());
 
 			if(MHSettings::hh) MHSettings::hh->OnDraw(hdc,200);
@@ -135,7 +135,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 /*			RECT rect;
 
-			// Квадратик с мышью
+			// РљРІР°РґСЂР°С‚РёРє СЃ РјС‹С€СЊСЋ
 			//xpercent/100.0f*xsize
 			//ypercent/100.0f*ysize
 			rect.left=(LONG)(MH_WINDOW_SIZE/2+quad_x-10);
@@ -151,9 +151,9 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 			break;
 
-		default: // Сообщения обрабатываются системой
+		default: // РЎРѕРѕР±С‰РµРЅРёСЏ РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ СЃРёСЃС‚РµРјРѕР№
 			return DefWindowProc(hwnd,message,wparam,lparam);
 	}
 
-return 0; // сами обработали
+return 0; // СЃР°РјРё РѕР±СЂР°Р±РѕС‚Р°Р»Рё
 }

@@ -1,4 +1,4 @@
-// Обработчик хука, режим 1
+п»ї// РћР±СЂР°Р±РѕС‚С‡РёРє С…СѓРєР°, СЂРµР¶РёРј 1
 #ifndef __MH_HOOKHANDLER1
 #define __MH_HOOKHANDLER1
 
@@ -11,13 +11,13 @@ public:
 	virtual void OnMouseMove(LONG _x, LONG _y);
 	virtual bool OnRDown();
 	virtual bool OnRUp();
-	virtual void OnDraw(HDC hdc, LONG window_size); // для отладки
-	virtual void OnTimer(); // Нужен, когда нажата правая кнопка мыши, включающя режим 3
+	virtual void OnDraw(HDC hdc, LONG window_size); // РґР»СЏ РѕС‚Р»Р°РґРєРё
+	virtual void OnTimer(); // РќСѓР¶РµРЅ, РєРѕРіРґР° РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё, РІРєР»СЋС‡Р°СЋС‰СЏ СЂРµР¶РёРј 3
 	virtual void Halt();
 protected:
 	bool flag_opposite_direction;
 	DWORD opposite_time;
-	DWORD last_time; // это для таймера 3-го режима
+	DWORD last_time; // СЌС‚Рѕ РґР»СЏ С‚Р°Р№РјРµСЂР° 3-РіРѕ СЂРµР¶РёРјР°
 };
 
 #endif

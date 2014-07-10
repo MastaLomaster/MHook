@@ -1,4 +1,4 @@
-// Обработчик хука, режим 3
+п»ї// РћР±СЂР°Р±РѕС‚С‡РёРє С…СѓРєР°, СЂРµР¶РёРј 3
 #ifndef __MH_HOOKHANDLER6
 #define __MH_HOOKHANDLER6
 
@@ -8,7 +8,7 @@ class MHookHandler6:public MHookHandler
 {
 public:
 	virtual void OnMouseMove(LONG _x, LONG _y);
-	virtual void OnMouseScroll(LONG _x, LONG _y); // Единственный хендлер, где эта функция перегружена
+	virtual void OnMouseScroll(LONG _x, LONG _y); // Р•РґРёРЅСЃС‚РІРµРЅРЅС‹Р№ С…РµРЅРґР»РµСЂ, РіРґРµ СЌС‚Р° С„СѓРЅРєС†РёСЏ РїРµСЂРµРіСЂСѓР¶РµРЅР°
 	virtual bool OnRDown();
 	virtual bool OnRUp();
 	virtual void OnTimer();

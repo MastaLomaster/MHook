@@ -1,4 +1,4 @@
-// Здесь хранятся все настройки
+п»ї// Р—РґРµСЃСЊ С…СЂР°РЅСЏС‚СЃСЏ РІСЃРµ РЅР°СЃС‚СЂРѕР№РєРё
 #ifndef __MH_SETTINGS
 #define __MH_SETTINGS
 
@@ -9,10 +9,10 @@ class MHSettings
 public:
 	static int SettingsDialogue(HWND hwnd);
 
-	// Число позиций на кейпаде (4 или 8)
+	// Р§РёСЃР»Рѕ РїРѕР·РёС†РёР№ РЅР° РєРµР№РїР°РґРµ (4 РёР»Рё 8)
 	static int GetNumPositions(){return num_positions;}
 	static void SetNumPositions(int _num_positions){num_positions=_num_positions;}
-	// Чувствительность мыши
+	// Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјС‹С€Рё
 	static int GetMouseSensitivity(){return mouse_sensitivity;}
 	static void SetMouseSensitivity(int _mouse_sensitivity){mouse_sensitivity=_mouse_sensitivity;}
 	static MHookHandler *hh;
@@ -28,7 +28,7 @@ public:
 		flag_downall, flag_skip_fast, flag_up_immediately;
 	static int mode,mode3axe;
 	static int circle_scale_factor;
-	static int OpenMHookConfig(HWND hwnd,char *default_filename=NULL);
+	static int OpenMHookConfig(HWND hwnd,TCHAR *default_filename=NULL);
 	static int SaveMHookConfig(HWND hwnd);
 	static void FillDialogue(HWND hdwnd);
 	static void AfterLoad(HWND hdwnd);
@@ -37,5 +37,21 @@ protected:
 	static int num_positions, mouse_sensitivity;
 
 };
+
+typedef struct
+{
+	TCHAR *stroka;
+	int value;
+} MHIntChar;
+
+typedef struct
+{
+	TCHAR *stroka;
+	WORD value;
+} MHWORDChar;
+
+#define MH_NUM_SCANCODES 103
+
+extern MHWORDChar dlg_scancodes[MH_NUM_SCANCODES];
 
 #endif

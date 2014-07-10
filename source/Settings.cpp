@@ -1,4 +1,4 @@
-#include <windows.h>
+п»ї#include <windows.h>
 #include <stdio.h>
 #include "Settings.h"
 #include "MHKeypad.h"
@@ -12,8 +12,10 @@
 #include "hh4.h"
 #include "hh5.h"
 #include "hh6.h"
+#include "MagicWindow.h"
 
 static char char_buf[4096];
+static TCHAR tchar_buf[4096];
 
 extern HINSTANCE	MHInst;
 extern HWND		MHhwnd;
@@ -23,19 +25,19 @@ extern bool flag_left_button_waits;
 extern bool flag_right_button_waits;
 extern	int top_position; 
 
-static char *filter_MHOOK="файлы MHOOK\0*.MHOOK\0\0";
-static char tfilename[1258];
+static TCHAR *filter_MHOOK=L"С„Р°Р№Р»С‹ MHOOK\0*.MHOOK\0\0";
+static TCHAR tfilename[1258];
 //static char tfiletitle[1258]={"default.MHOOK"};
-static char tfiletitle[1258];
+static TCHAR tfiletitle[1258];
 
 
 int MHSettings::num_positions=4;
 int MHSettings::mouse_sensitivity=1;
-DWORD MHSettings::time_between_pushes=100; // 100 миллисекунд между нажатиями на клавиши
-DWORD MHSettings::timeout_after_move=100; // 100 миллисекунд после последнего известия о движении мыши
-LONG MHSettings::minimal_mouse_speed=900; //(квадрат числа пикселов за 1/10 секунды)
-LONG MHSettings::timeout_mouse_switch=1500; // полторы секунды на переключение
-LONG MHSettings::timeout_mouse_click=143; // 1/7 секунды держим клавишу нажатой
+DWORD MHSettings::time_between_pushes=100; // 100 РјРёР»Р»РёСЃРµРєСѓРЅРґ РјРµР¶РґСѓ РЅР°Р¶Р°С‚РёСЏРјРё РЅР° РєР»Р°РІРёС€Рё
+DWORD MHSettings::timeout_after_move=100; // 100 РјРёР»Р»РёСЃРµРєСѓРЅРґ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РІРµСЃС‚РёСЏ Рѕ РґРІРёР¶РµРЅРёРё РјС‹С€Рё
+LONG MHSettings::minimal_mouse_speed=900; //(РєРІР°РґСЂР°С‚ С‡РёСЃР»Р° РїРёРєСЃРµР»РѕРІ Р·Р° 1/10 СЃРµРєСѓРЅРґС‹)
+LONG MHSettings::timeout_mouse_switch=1500; // РїРѕР»С‚РѕСЂС‹ СЃРµРєСѓРЅРґС‹ РЅР° РїРµСЂРµРєР»СЋС‡РµРЅРёРµ
+LONG MHSettings::timeout_mouse_click=143; // 1/7 СЃРµРєСѓРЅРґС‹ РґРµСЂР¶РёРј РєР»Р°РІРёС€Сѓ РЅР°Р¶Р°С‚РѕР№
 LONG MHSettings::deadx=100, MHSettings::deady=100; 
 bool MHSettings::flag_enable_speed_button=false;
 bool MHSettings::flag_2moves=false;
@@ -43,18 +45,18 @@ bool MHSettings::flag_2moves=false;
 bool MHSettings::flag_2moves_mode1=true;
 bool MHSettings::flag_change_direction_ontheway=false;
 bool MHSettings::flag_right_mb_iskey=false;
-//bool MHSettings::flag_alt2=false; // Две альтернативные раскладки
-bool MHSettings::flag_alt2=true; // Две альтернативные раскладки
-bool MHSettings::flag_no_move_right_mb=false; // Флаг запрещает двигать мышь, когда нажата правая кнопка
-//bool MHSettings::flag_no_move_right_mb=true; // Флаг запрещает двигать мышь, когда нажата правая кнопка
+//bool MHSettings::flag_alt2=false; // Р”РІРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ СЂР°СЃРєР»Р°РґРєРё
+bool MHSettings::flag_alt2=true; // Р”РІРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ СЂР°СЃРєР»Р°РґРєРё
+bool MHSettings::flag_no_move_right_mb=false; // Р¤Р»Р°Рі Р·Р°РїСЂРµС‰Р°РµС‚ РґРІРёРіР°С‚СЊ РјС‹С€СЊ, РєРѕРіРґР° РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР°
+//bool MHSettings::flag_no_move_right_mb=true; // Р¤Р»Р°Рі Р·Р°РїСЂРµС‰Р°РµС‚ РґРІРёРіР°С‚СЊ РјС‹С€СЊ, РєРѕРіРґР° РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР°
 bool MHSettings::flag_mode5autoclick=false;
-bool MHSettings::flag_right_mb_doubleclick=false; // Стоп эмуляции по двойному щелчку
-bool MHSettings::flag_left_mb_push_twice=false; // нажимать клавишу также при отпускании ЛК мыши
-bool MHSettings::flag_right_mb_push_twice=false; // нажимать клавишу также при отпускании ПК мыши
+bool MHSettings::flag_right_mb_doubleclick=false; // РЎС‚РѕРї СЌРјСѓР»СЏС†РёРё РїРѕ РґРІРѕР№РЅРѕРјСѓ С‰РµР»С‡РєСѓ
+bool MHSettings::flag_left_mb_push_twice=false; // РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё Р›Рљ РјС‹С€Рё
+bool MHSettings::flag_right_mb_push_twice=false; // РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РџРљ РјС‹С€Рё
 int MHSettings::circle_scale_factor=0;
-bool MHSettings::flag_downall=false; // вниз и вбок = просто вниз (1 режим)
-bool MHSettings::flag_skip_fast=false; // Быстрое движение мыши игнорируется
-bool MHSettings::flag_up_immediately=false; // Только что нажатая кнопка должна быть отжата (1 режим)
+bool MHSettings::flag_downall=false; // РІРЅРёР· Рё РІР±РѕРє = РїСЂРѕСЃС‚Рѕ РІРЅРёР· (1 СЂРµР¶РёРј)
+bool MHSettings::flag_skip_fast=false; // Р‘С‹СЃС‚СЂРѕРµ РґРІРёР¶РµРЅРёРµ РјС‹С€Рё РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ
+bool MHSettings::flag_up_immediately=false; // РўРѕР»СЊРєРѕ С‡С‚Рѕ РЅР°Р¶Р°С‚Р°СЏ РєРЅРѕРїРєР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РѕС‚Р¶Р°С‚Р° (1 СЂРµР¶РёРј)
 
 int MHSettings::mode=1;
 int MHSettings::mode3axe=0;
@@ -69,64 +71,54 @@ MHookHandler4 hh4;
 MHookHandler5 hh5;
 MHookHandler6 hh6;
 
-//=== Массивы для параметров в диалоге ===/
-typedef struct
-{
-	char *stroka;
-	int value;
-} MHIntChar;
-
-typedef struct
-{
-	char *stroka;
-	WORD value;
-} MHWORDChar;
+//=== РњР°СЃСЃРёРІС‹ РґР»СЏ РїР°СЂР°РјРµС‚СЂРѕРІ РІ РґРёР°Р»РѕРіРµ ===/
 
 
-// Чувствительность мыши
+
+// Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјС‹С€Рё
 #define MH_NUM_SENSITIVITY 6
-static MHIntChar dlg_sensitivity[MH_NUM_SENSITIVITY]={{"1",1},{"5",5},{"10",10},{"25",25},{"50",50},{"100",100}}; 
+static MHIntChar dlg_sensitivity[MH_NUM_SENSITIVITY]={{L"1",1},{L"5",5},{L"10",10},{L"25",25},{L"50",50},{L"100",100}}; 
 static int dlg_current_sensitivity=2;
 
 /*
-// Какие клавиши нажимать
+// РљР°РєРёРµ РєР»Р°РІРёС€Рё РЅР°Р¶РёРјР°С‚СЊ
 #define MH_NUM_SCANCODES 16
 static MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
 {
-	{"<ничего>",0xFFFF},
-	{"вверх",0xE048},{"вправо",0xE04D},{"вниз",0xE050},{"влево",0xE04B},
+	{"<РЅРёС‡РµРіРѕ>",0xFFFF},
+	{"РІРІРµСЂС…",0xE048},{"РІРїСЂР°РІРѕ",0xE04D},{"РІРЅРёР·",0xE050},{"РІР»РµРІРѕ",0xE04B},
 	{"W",0x11},{"D",0x20},{"S",0x1F},{"A",0x1E},
 	{"Z",0x2C},{"X",0x2D},{"C",0x2E},
-	{"пробел",0x39},{"F1",0x3B},{"TAB",0x0F},
+	{"РїСЂРѕР±РµР»",0x39},{"F1",0x3B},{"TAB",0x0F},
 	{"Esc",0x01}
 };*/ 
 
-#define MH_NUM_SCANCODES 103
-// Здесь нет PrtScr,Pause
-static MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
+
+// Р—РґРµСЃСЊ РЅРµС‚ PrtScr,Pause
+MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
 {
-	{"<ничего>",0xFFFF}, // 0
-	{"вверх",0xE048},{"вправо",0xE04D},{"вниз",0xE050},{"влево",0xE04B}, // 1-4
-	{"A",0x1E},{"B",0x30},{"C",0x2E},{"D",0x20},{"E",0x12}, // 5-9
-	{"F",0x21},{"G",0x22},{"H",0x23},{"I",0x17},{"J",0x24}, // 10-14
-	{"K",0x25},{"L",0x26},{"M",0x32},{"N",0x31},{"O",0x18}, // 15-19
-	{"P",0x19},{"Q",0x10},{"R",0x13},{"S",0x1F},{"T",0x14}, // 20-24
-	{"U",0x16},{"V",0x2F},{"W",0x11},{"X",0x2D},{"Y",0x15}, // 25-29
-	{"Z",0x2C},{"0",0x0B},{"1",0x02},{"2",0x03},{"3",0x04}, // 30-34
-	{"4",0x05},{"5",0x06},{"6",0x07},{"7",0x08},{"8",0x09}, // 35-39
-	{"9",0x0A},{"~",0x29},{"-",0x0C},{"=",0x0D},{"\\",0x2B}, // 40-44
-	{"[",0x1A},{"]",0x1B},{";",0x27},{"'",0x28},{",",0x33}, //45-49
-	{".",0x34},{"/",0x35},{"Backspace",0x0E},{"пробел",0x39},{"TAB",0x0F}, // 50-54
-	{"Caps Lock",0x3A},{"Левый Shift",0x2A},{"Левый Ctrl",0x1D},{"Левый Alt",0x38},{"Левый Win",0xE05B}, // 55-59
-	{"Правый Shift",0x36},{"Правый Ctrl",0xE01D},{"Правый Alt",0xE038},{"Правый WIN",0xE05C},{"Menu",0xE05D}, // 60-64
-	{"Enter",0x1C},{"Esc",0x01},{"F1",0x3B},{"F2",0x3C},{"F3",0x3D}, // 65-69
-	{"F4",0x3E},{"F5",0x3F},{"F6",0x40},{"F7",0x41},{"(F8 - запрещена) ",0xFFFF}, // 70-74
-	{"F9",0x43},{"F10",0x44},{"F11",0x57},{"F12",0x58},{"Scroll Lock",0x46}, // 75-79
-	{"Insert",0xE052},{"(Delete - запрещена)",0xE053},{"Home",0xE047},{"End",0xE04F},{"PgUp",0xE049}, // 80-84
-	{"PgDn",0xE051},{"Num Lock",0x45},{"Num /",0xE035},{"Num *",0x37},{"Num -",0x4A}, // 85-89
-	{"Num +",0x4E},{"Num Enter",0xE01C},{"(Num . - запрещена)",0xFFFF},{"Num 0",0x52},{"Num 1",0x4F}, // 90-94
-	{"Num 2",0x50},{"Num 3",0x51},{"Num 4",0x4B},{"Num 5",0x4C},{"Num 6",0x4D}, // 95-99
-	{"Num 7",0x47},{"Num 8",0x48},{"Num 9",0x49} // 100-102
+	{L"<РЅРёС‡РµРіРѕ>",0xFFFF}, // 0
+	{L"РІРІРµСЂС…",0xE048},{L"РІРїСЂР°РІРѕ",0xE04D},{L"РІРЅРёР·",0xE050},{L"РІР»РµРІРѕ",0xE04B}, // 1-4
+	{L"A",0x1E},{L"B",0x30},{L"C",0x2E},{L"D",0x20},{L"E",0x12}, // 5-9
+	{L"F",0x21},{L"G",0x22},{L"H",0x23},{L"I",0x17},{L"J",0x24}, // 10-14
+	{L"K",0x25},{L"L",0x26},{L"M",0x32},{L"N",0x31},{L"O",0x18}, // 15-19
+	{L"P",0x19},{L"Q",0x10},{L"R",0x13},{L"S",0x1F},{L"T",0x14}, // 20-24
+	{L"U",0x16},{L"V",0x2F},{L"W",0x11},{L"X",0x2D},{L"Y",0x15}, // 25-29
+	{L"Z",0x2C},{L"0",0x0B},{L"1",0x02},{L"2",0x03},{L"3",0x04}, // 30-34
+	{L"4",0x05},{L"5",0x06},{L"6",0x07},{L"7",0x08},{L"8",0x09}, // 35-39
+	{L"9",0x0A},{L"~",0x29},{L"-",0x0C},{L"=",0x0D},{L"\\",0x2B}, // 40-44
+	{L"[",0x1A},{L"]",0x1B},{L";",0x27},{L"'",0x28},{L",",0x33}, //45-49
+	{L".",0x34},{L"/",0x35},{L"Backspace",0x0E},{L"РїСЂРѕР±РµР»",0x39},{L"TAB",0x0F}, // 50-54
+	{L"Caps Lock",0x3A},{L"Р›РµРІС‹Р№ Shift",0x2A},{L"Р›РµРІС‹Р№ Ctrl",0x1D},{L"Р›РµРІС‹Р№ Alt",0x38},{L"Р›РµРІС‹Р№ Win",0xE05B}, // 55-59
+	{L"РџСЂР°РІС‹Р№ Shift",0x36},{L"РџСЂР°РІС‹Р№ Ctrl",0xE01D},{L"РџСЂР°РІС‹Р№ Alt",0xE038},{L"РџСЂР°РІС‹Р№ WIN",0xE05C},{L"Menu",0xE05D}, // 60-64
+	{L"Enter",0x1C},{L"Esc",0x01},{L"F1",0x3B},{L"F2",0x3C},{L"F3",0x3D}, // 65-69
+	{L"F4",0x3E},{L"F5",0x3F},{L"F6",0x40},{L"F7",0x41},{L"(F8 - Р·Р°РїСЂРµС‰РµРЅР°) ",0xFFFF}, // 70-74
+	{L"F9",0x43},{L"F10",0x44},{L"F11",0x57},{L"F12",0x58},{L"Scroll Lock",0x46}, // 75-79
+	{L"Insert",0xE052},{L"(Delete - Р·Р°РїСЂРµС‰РµРЅР°)",0xE053},{L"Home",0xE047},{L"End",0xE04F},{L"PgUp",0xE049}, // 80-84
+	{L"PgDn",0xE051},{L"Num Lock",0x45},{L"Num /",0xE035},{L"Num *",0x37},{L"Num -",0x4A}, // 85-89
+	{L"Num +",0x4E},{L"Num Enter",0xE01C},{L"(Num . - Р·Р°РїСЂРµС‰РµРЅР°)",0xFFFF},{L"Num 0",0x52},{L"Num 1",0x4F}, // 90-94
+	{L"Num 2",0x50},{L"Num 3",0x51},{L"Num 4",0x4B},{L"Num 5",0x4C},{L"Num 6",0x4D}, // 95-99
+	{L"Num 7",0x47},{L"Num 8",0x48},{L"Num 9",0x49} // 100-102
 
 }; 
 
@@ -135,48 +127,66 @@ static MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
 //static int dlg_current_scancodes[15]={1,2,3,4,67,53,27,8,23,5,0,9,10,11,12};
 static int dlg_current_scancodes[15]={27,8,23,5,67,53,  24,66,12,17, 0, 6,9,0,56};
 
-// Таймаут после движения
+// РўР°Р№РјР°СѓС‚ РїРѕСЃР»Рµ РґРІРёР¶РµРЅРёСЏ
 #define MH_NUM_TIMEOUT 9
-static MHIntChar dlg_timeout[MH_NUM_TIMEOUT]={{"50 мс",50},{"75 мс",75},{"100 мс",100},{"125 мс",125},{"150 мс",150},
-{"200 мс",200},{"250 мс",250},{"0,5 секунды",500},{"1 секунда",1000},}; 
+static MHIntChar dlg_timeout[MH_NUM_TIMEOUT]={{L"50 РјСЃ",50},{L"75 РјСЃ",75},{L"100 РјСЃ",100},{L"125 РјСЃ",125},{L"150 РјСЃ",150},
+{L"200 РјСЃ",200},{L"250 РјСЃ",250},{L"0,5 СЃРµРєСѓРЅРґС‹",500},{L"1 СЃРµРєСѓРЅРґР°",1000},}; 
 static int dlg_current_timeout=0;
 
-// Быстрая скорость движения мыши
+// Р‘С‹СЃС‚СЂР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РґРІРёР¶РµРЅРёСЏ РјС‹С€Рё
 #define MH_NUM_SPEED 7
-static MHIntChar dlg_speed[MH_NUM_SPEED]={{"100",100},{"200",400},{"300",900},{"400",1600},{"500",2500},{"700",4900},{"1000",10000}}; 
+static MHIntChar dlg_speed[MH_NUM_SPEED]={{L"100",100},{L"200",400},{L"300",900},{L"400",1600},{L"500",2500},{L"700",4900},{L"1000",10000}}; 
 static int dlg_current_speed=3;
 
-// Нужно для правильного сохранения и чтения конфигурации
+// РќСѓР¶РЅРѕ РґР»СЏ РїСЂР°РІРёР»СЊРЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ Рё С‡С‚РµРЅРёСЏ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 #define MH_NUM_DIRECTIONS 2
-static MHIntChar dlg_dirs[MH_NUM_DIRECTIONS]={{"4",4},{"8",8}};
+static MHIntChar dlg_dirs[MH_NUM_DIRECTIONS]={{L"4",4},{L"8",8}};
 static int dlg_current_direction=0;
 
 
-// Таймаут переключения левой кнопки мыши
+// РўР°Р№РјР°СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 #define MH_NUM_SWITCH_TIMEOUT 6
-static MHIntChar dlg_switch_timeout[MH_NUM_SWITCH_TIMEOUT]={{"0,1",100},{"0,5",500},{"1",1000},{"1,5",1000},{"2",2000},{"3",3000}}; 
+static MHIntChar dlg_switch_timeout[MH_NUM_SWITCH_TIMEOUT]={{L"0,1",100},{L"0,5",500},{L"1",1000},{L"1,5",1000},{L"2",2000},{L"3",3000}}; 
 static int dlg_current_switch_timeout=0;
 
-// Количество пикселов в мертвой зоне
-#define MH_DEAD_ZONES 3
-static MHIntChar dlg_deadzones[MH_DEAD_ZONES]={{"50",50},{"100",100},{"200",200}}; 
+// РљРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµР»РѕРІ РІ РјРµСЂС‚РІРѕР№ Р·РѕРЅРµ
+#define MH_DEAD_ZONES 4
+static MHIntChar dlg_deadzones[MH_DEAD_ZONES]={{L"50",50},{L"100",100},{L"200",200},{L"25",25}}; 
 static int dlg_current_deadzone_x=1,dlg_current_deadzone_y=1;
 
-// Одна из осей в режиме 4 может работать в режиме 3
+// РћРґРЅР° РёР· РѕСЃРµР№ РІ СЂРµР¶РёРјРµ 4 РјРѕР¶РµС‚ СЂР°Р±РѕС‚Р°С‚СЊ РІ СЂРµР¶РёРјРµ 3
 #define MH_NUM_MODE3AXE 3
-static MHIntChar dlg_mode3axe[MH_NUM_MODE3AXE]={{"не надо",-1},{"на оси вправо-влево",0},{"на оси вверх-вниз",1}}; 
+static MHIntChar dlg_mode3axe[MH_NUM_MODE3AXE]={{L"РЅРµ РЅР°РґРѕ",-1},{L"РЅР° РѕСЃРё РІРїСЂР°РІРѕ-РІР»РµРІРѕ",0},{L"РЅР° РѕСЃРё РІРІРµСЂС…-РІРЅРёР·",1}}; 
 static int dlg_current_mode3axe=0;
 
-// В режиме 5 выбор колесом
+// Р’ СЂРµР¶РёРјРµ 5 РІС‹Р±РѕСЂ РєРѕР»РµСЃРѕРј
 #define MH_NUM_CIRCLE_SCALES 3
-static MHIntChar dlg_circlescales[MH_NUM_CIRCLE_SCALES]={{"не использовать",0},{"50 пикселов",50},{"100 пикселов",100}}; 
+static MHIntChar dlg_circlescales[MH_NUM_CIRCLE_SCALES]={{L"РЅРµ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ",0},{L"50 РїРёРєСЃРµР»РѕРІ",50},{L"100 РїРёРєСЃРµР»РѕРІ",100}}; 
 static int dlg_current_circlescale=0;
 
 // static int res; // Selection result
+// Р’СЂРµРјРµРЅРЅРѕ - РґРёР°Р»РѕРі РЅРѕРјРµСЂ РґРІР°
+static BOOL CALLBACK DlgSettings2WndProc(HWND hdwnd,
+						   UINT uMsg,
+						   WPARAM wparam,
+						   LPARAM lparam )
+{
+if (uMsg==WM_COMMAND)
+	{
+	switch (LOWORD(wparam))
+		{
+			case IDOK: 	//РҐРѕСЂРѕС€Рѕ!
+				EndDialog(hdwnd,0);
+				return 1;
+		}
+	} // switch WM_COMMAND
+return 0;
+}
+
 //===================================================================
-// Диалог настроек
+// Р”РёР°Р»РѕРі РЅР°СЃС‚СЂРѕРµРє
 //===================================================================
-static bool wasd_shown=true; // Показаны ли кнопки WSAD?
+static bool wasd_shown=true; // РџРѕРєР°Р·Р°РЅС‹ Р»Рё РєРЅРѕРїРєРё WSAD?
 static BOOL CALLBACK DlgSettingsWndProc(HWND hdwnd,
 						   UINT uMsg,
 						   WPARAM wparam,
@@ -186,6 +196,12 @@ if (uMsg==WM_COMMAND)
 	{
 	switch (LOWORD(wparam))
 		{
+		case IDC_BUTTON_DOPLNITELNO:
+			MagicWindow::ShowEditable();
+			DialogBox(MHInst,MAKEINTRESOURCE(IDD_DIALOG_SETTINGS2),hdwnd,(DLGPROC)DlgSettings2WndProc);
+			MagicWindow::Hide();
+			return 1;
+
 		case IDC_BUTTON_WASD:
 
 			if(wasd_shown)
@@ -206,22 +222,22 @@ if (uMsg==WM_COMMAND)
 			}
 			return 1;
 
-		case IDC_BUTTON_LOAD: // Грузим файл 
+		case IDC_BUTTON_LOAD: // Р“СЂСѓР·РёРј С„Р°Р№Р» 
 			MHSettings::OpenMHookConfig(hdwnd);
 			MHSettings::AfterLoad(hdwnd);
 			return 1;
 
-		case IDC_BUTTON_SAVE: // Сохраняем файл 
-			MHSettings::BeforeSaveOrStart(hdwnd); // Текущие поля диалога копирует в переменные
+		case IDC_BUTTON_SAVE: // РЎРѕС…СЂР°РЅСЏРµРј С„Р°Р№Р» 
+			MHSettings::BeforeSaveOrStart(hdwnd); // РўРµРєСѓС‰РёРµ РїРѕР»СЏ РґРёР°Р»РѕРіР° РєРѕРїРёСЂСѓРµС‚ РІ РїРµСЂРµРјРµРЅРЅС‹Рµ
 			MHSettings::SaveMHookConfig(hdwnd);
 			return 1;
 
-		case IDCANCEL: // Не случилось 
+		case IDCANCEL: // РќРµ СЃР»СѓС‡РёР»РѕСЃСЊ 
 			EndDialog(hdwnd,2);
 			return 1;
 
-		case IDOK: 	//Хорошо!
-			// 1. Чувствительность
+		case IDOK: 	//РҐРѕСЂРѕС€Рѕ!
+			// 1. Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ
 			MHSettings::BeforeSaveOrStart(hdwnd);
 			EndDialog(hdwnd,0);
 			return 1;
@@ -235,40 +251,40 @@ if (uMsg==WM_COMMAND)
 		//SetWindowPos(hdwnd,NULL,50,50,0,0,SWP_NOSIZE);
 		//SetWindowPos(hdwnd,HWND_TOPMOST,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
 		SetWindowPos(hdwnd,HWND_TOP,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
-		// Здесь не работает. 
+		// Р—РґРµСЃСЊ РЅРµ СЂР°Р±РѕС‚Р°РµС‚. 
 		//SetWindowLong(hdwnd,GWL_STYLE,GetWindowLong(hdwnd,GWL_STYLE) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
 		
-		MHSettings::FillDialogue(hdwnd); // Заполняет списки
-		MHSettings::AfterLoad(hdwnd); // Показываем текущие значения
-		return 1; // Да, ставь фокус куда надо
+		MHSettings::FillDialogue(hdwnd); // Р—Р°РїРѕР»РЅСЏРµС‚ СЃРїРёСЃРєРё
+		MHSettings::AfterLoad(hdwnd); // РџРѕРєР°Р·С‹РІР°РµРј С‚РµРєСѓС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ
+		return 1; // Р”Р°, СЃС‚Р°РІСЊ С„РѕРєСѓСЃ РєСѓРґР° РЅР°РґРѕ
 	}
 
  
 return 0;
 }
 
-// Эта функция определена в HookProc
+// Р­С‚Р° С„СѓРЅРєС†РёСЏ РѕРїСЂРµРґРµР»РµРЅР° РІ HookProc
 LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam);
 
 //====================================================================================
-// Заполнить выпадающие списки диалога возможными значениями
+// Р—Р°РїРѕР»РЅРёС‚СЊ РІС‹РїР°РґР°СЋС‰РёРµ СЃРїРёСЃРєРё РґРёР°Р»РѕРіР° РІРѕР·РјРѕР¶РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё
 //====================================================================================
 void MHSettings::FillDialogue(HWND hdwnd)
 {
 	int i;
 
-	// Имя файла показать в диалоге
+	// РРјСЏ С„Р°Р№Р»Р° РїРѕРєР°Р·Р°С‚СЊ РІ РґРёР°Р»РѕРіРµ
 	SendDlgItemMessage(hdwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
 
-	// Заполнить выпадающие списки с текущими значениями!
-		// 1. Чувствительность
+	// Р—Р°РїРѕР»РЅРёС‚СЊ РІС‹РїР°РґР°СЋС‰РёРµ СЃРїРёСЃРєРё СЃ С‚РµРєСѓС‰РёРјРё Р·РЅР°С‡РµРЅРёСЏРјРё!
+		// 1. Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ
 		for(i=0;i<MH_NUM_SENSITIVITY;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_SENSITIVITY, CB_ADDSTRING, 0, (LPARAM)(dlg_sensitivity[i].stroka));
 		}
 		//SendDlgItemMessage(hdwnd,IDC_SENSITIVITY, CB_SETCURSEL, dlg_current_sensitivity, 0L);
 		
-		// 2. Клавиши
+		// 2. РљР»Р°РІРёС€Рё
 		for(i=0;i<MH_NUM_SCANCODES;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_UP, CB_ADDSTRING, 0, (LPARAM)(dlg_scancodes[i].stroka));
@@ -289,7 +305,7 @@ void MHSettings::FillDialogue(HWND hdwnd)
 		}
 
 
-		// 2.1. Мёртвые зоны
+		// 2.1. РњС‘СЂС‚РІС‹Рµ Р·РѕРЅС‹
 		for(i=0;i<MH_DEAD_ZONES;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_DEADX, CB_ADDSTRING, 0, (LPARAM)(dlg_deadzones[i].stroka));
@@ -297,43 +313,43 @@ void MHSettings::FillDialogue(HWND hdwnd)
 		}
 
 
-		// 2.2 Режим 3 для одной из осей в режиме 4
+		// 2.2 Р РµР¶РёРј 3 РґР»СЏ РѕРґРЅРѕР№ РёР· РѕСЃРµР№ РІ СЂРµР¶РёРјРµ 4
 		for(i=0;i<MH_NUM_MODE3AXE;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_MODE3AXE, CB_ADDSTRING, 0, (LPARAM)(dlg_mode3axe[i].stroka));
 		}
 
 
-		// 2.5. Минимальная скорость мыши
+		// 2.5. РњРёРЅРёРјР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РјС‹С€Рё
 		for(i=0;i<MH_NUM_SPEED;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_SPEED, CB_ADDSTRING, 0, (LPARAM)(dlg_speed[i].stroka));
 		}
 
 
-		// 2.6. Число направлений
+		// 2.6. Р§РёСЃР»Рѕ РЅР°РїСЂР°РІР»РµРЅРёР№
 		for(i=0;i<MH_NUM_DIRECTIONS;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_DIRECTIONS, CB_ADDSTRING, 0, (LPARAM)(dlg_dirs[i].stroka));
 		}
 
 
-		// 3. Радио-кнопка
+		// 3. Р Р°РґРёРѕ-РєРЅРѕРїРєР°
 
-		// 4. Таймаут
+		// 4. РўР°Р№РјР°СѓС‚
 		for(i=0;i<MH_NUM_TIMEOUT;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_TIMEOUT, CB_ADDSTRING, 0, (LPARAM)(dlg_timeout[i].stroka));
 		}
 
 		
-		// 4.5. Таймаут переключения левой кнопки мыши
+		// 4.5. РўР°Р№РјР°СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 		for(i=0;i<MH_NUM_SWITCH_TIMEOUT;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_SWITCH_TIMEOUT, CB_ADDSTRING, 0, (LPARAM)(dlg_switch_timeout[i].stroka));
 		}
 
-		// 4.6. Чувствительность мыши при прокрутке колеса
+		// 4.6. Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјС‹С€Рё РїСЂРё РїСЂРѕРєСЂСѓС‚РєРµ РєРѕР»РµСЃР°
 		for(i=0;i<MH_NUM_CIRCLE_SCALES;i++)
 		{
 			SendDlgItemMessage(hdwnd,IDC_CIRCLE_SCALES, CB_ADDSTRING, 0, (LPARAM)(dlg_circlescales[i].stroka));
@@ -342,17 +358,17 @@ void MHSettings::FillDialogue(HWND hdwnd)
 }
 
 //=======================================================================================
-// Актуализировать в полях диалога загруженнные значения переменных
+// РђРєС‚СѓР°Р»РёР·РёСЂРѕРІР°С‚СЊ РІ РїРѕР»СЏС… РґРёР°Р»РѕРіР° Р·Р°РіСЂСѓР¶РµРЅРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С…
 //=======================================================================================
 void MHSettings::AfterLoad(HWND hdwnd)
 {
 //	int i;
 
-	// Заполнить выпадающие списки с текущими значениями!
-		// 1. Чувствительность
+	// Р—Р°РїРѕР»РЅРёС‚СЊ РІС‹РїР°РґР°СЋС‰РёРµ СЃРїРёСЃРєРё СЃ С‚РµРєСѓС‰РёРјРё Р·РЅР°С‡РµРЅРёСЏРјРё!
+		// 1. Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ
 		SendDlgItemMessage(hdwnd,IDC_SENSITIVITY, CB_SETCURSEL, dlg_current_sensitivity, 0L);
 		
-		// 2. Клавиши
+		// 2. РљР»Р°РІРёС€Рё
 		SendDlgItemMessage(hdwnd,IDC_UP, CB_SETCURSEL, dlg_current_scancodes[0], 0L);
 		SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_SETCURSEL, dlg_current_scancodes[1], 0L);
 		SendDlgItemMessage(hdwnd,IDC_DOWN, CB_SETCURSEL, dlg_current_scancodes[2], 0L);
@@ -370,21 +386,21 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		SendDlgItemMessage(hdwnd,IDC_LEFT3, CB_SETCURSEL, dlg_current_scancodes[14], 0L);
 		
 
-		// 2.1. Мёртвые зоны
+		// 2.1. РњС‘СЂС‚РІС‹Рµ Р·РѕРЅС‹
 		SendDlgItemMessage(hdwnd,IDC_DEADX, CB_SETCURSEL, dlg_current_deadzone_x, 0L);
 		SendDlgItemMessage(hdwnd,IDC_DEADY, CB_SETCURSEL, dlg_current_deadzone_y, 0L);
 
-		// 2.2 Режим 3 для одной из осей в режиме 4
+		// 2.2 Р РµР¶РёРј 3 РґР»СЏ РѕРґРЅРѕР№ РёР· РѕСЃРµР№ РІ СЂРµР¶РёРјРµ 4
 		SendDlgItemMessage(hdwnd,IDC_MODE3AXE, CB_SETCURSEL, dlg_current_mode3axe, 0L);
 
-		// 2.5. Минимальная скорость мыши
+		// 2.5. РњРёРЅРёРјР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РјС‹С€Рё
 		SendDlgItemMessage(hdwnd,IDC_SPEED, CB_SETCURSEL, dlg_current_speed, 0L);
 
-		// 2.6. Число направлений
+		// 2.6. Р§РёСЃР»Рѕ РЅР°РїСЂР°РІР»РµРЅРёР№
 		// SendDlgItemMessage(hdwnd,IDC_DIRECTIONS, CB_SETCURSEL, MHSettings::GetNumPositions()/5, 0L);
 		SendDlgItemMessage(hdwnd,IDC_DIRECTIONS, CB_SETCURSEL, dlg_current_direction, 0L);
 
-		// 3. Радио-кнопка. Сначала все отпускаем (вот фигня-то!)
+		// 3. Р Р°РґРёРѕ-РєРЅРѕРїРєР°. РЎРЅР°С‡Р°Р»Р° РІСЃРµ РѕС‚РїСѓСЃРєР°РµРј (РІРѕС‚ С„РёРіРЅСЏ-С‚Рѕ!)
 		SendDlgItemMessage(hdwnd, IDC_RADIO1, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO2, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO3, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -419,69 +435,69 @@ void MHSettings::AfterLoad(HWND hdwnd)
 			break;
 		}
 		
-		// 3.2. Режим 2: Разрешать смену движения при нажатой правой кнопке мыши (
-		// (кнопка не используется)
+		// 3.2. Р РµР¶РёРј 2: Р Р°Р·СЂРµС€Р°С‚СЊ СЃРјРµРЅСѓ РґРІРёР¶РµРЅРёСЏ РїСЂРё РЅР°Р¶Р°С‚РѕР№ РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ РјС‹С€Рё (
+		// (РєРЅРѕРїРєР° РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
 		SendDlgItemMessage(hdwnd, IDC_M2_CHECK1, BM_SETCHECK, BST_CHECKED, 0);
 		
-		// 4. Таймаут
+		// 4. РўР°Р№РјР°СѓС‚
 		SendDlgItemMessage(hdwnd,IDC_TIMEOUT, CB_SETCURSEL, dlg_current_timeout, 0L);
 		
-		// 4.5. Таймаут переключения левой кнопки мыши
+		// 4.5. РўР°Р№РјР°СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 		SendDlgItemMessage(hdwnd,IDC_SWITCH_TIMEOUT, CB_SETCURSEL, dlg_current_switch_timeout, 0L);
 		
-		// 4.6. Чувствительность мыши при прокрутке колеса
+		// 4.6. Р§СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјС‹С€Рё РїСЂРё РїСЂРѕРєСЂСѓС‚РєРµ РєРѕР»РµСЃР°
 		SendDlgItemMessage(hdwnd,IDC_CIRCLE_SCALES, CB_SETCURSEL, dlg_current_circlescale, 0L);
 
 
-		// 6. Разрешить ли нажатие пятой кнопки при быстром движении мышью
+		// 6. Р Р°Р·СЂРµС€РёС‚СЊ Р»Рё РЅР°Р¶Р°С‚РёРµ РїСЏС‚РѕР№ РєРЅРѕРїРєРё РїСЂРё Р±С‹СЃС‚СЂРѕРј РґРІРёР¶РµРЅРёРё РјС‹С€СЊСЋ
 		if(MHSettings::flag_enable_speed_button) SendDlgItemMessage(hdwnd, IDC_FAST_PUSH, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_FAST_PUSH, BM_SETCHECK, BST_UNCHECKED, 0);
 		
-		// 7. Использовать ли в 4 режиме движение в 2 шага
+		// 7. РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё РІ 4 СЂРµР¶РёРјРµ РґРІРёР¶РµРЅРёРµ РІ 2 С€Р°РіР°
 		if(MHSettings::flag_2moves) SendDlgItemMessage(hdwnd, IDC_CHECK_2MOVES, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_2MOVES, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 8. Использовать ли в 1 режиме движение в 2 шага 
+		// 8. РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё РІ 1 СЂРµР¶РёРјРµ РґРІРёР¶РµРЅРёРµ РІ 2 С€Р°РіР° 
 		if(MHSettings::flag_2moves_mode1) SendDlgItemMessage(hdwnd, IDC_CHECK_2MOVES_MODE1, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_2MOVES_MODE1, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 9. можно ли менять направление движения на ходу 
+		// 9. РјРѕР¶РЅРѕ Р»Рё РјРµРЅСЏС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёРµ РґРІРёР¶РµРЅРёСЏ РЅР° С…РѕРґСѓ 
 		if(MHSettings::flag_change_direction_ontheway) SendDlgItemMessage(hdwnd, IDC_CHECK_CHANGE_DIRECTION_ONTHEWAY, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_CHANGE_DIRECTION_ONTHEWAY, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 10. правая кнопка мыши вместо обычного поведения ведёт себя, как клавиша 
+		// 10. РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё РІРјРµСЃС‚Рѕ РѕР±С‹С‡РЅРѕРіРѕ РїРѕРІРµРґРµРЅРёСЏ РІРµРґС‘С‚ СЃРµР±СЏ, РєР°Рє РєР»Р°РІРёС€Р° 
 		if(MHSettings::flag_right_mb_iskey) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_MB_ISKEY, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_MB_ISKEY, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 11. две альтернативные раскладки
+		// 11. РґРІРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ СЂР°СЃРєР»Р°РґРєРё
 		if(MHSettings::flag_alt2) SendDlgItemMessage(hdwnd, IDC_CHECK_2ALT, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_2ALT, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 12. автоклик в режиме 5
+		// 12. Р°РІС‚РѕРєР»РёРє РІ СЂРµР¶РёРјРµ 5
 		if(MHSettings::flag_mode5autoclick) SendDlgItemMessage(hdwnd, IDC_CHECK_AUTOCLICK, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_AUTOCLICK, BM_SETCHECK, BST_UNCHECKED, 0);
 		
-		// 13. пауза по двойному щелчку
+		// 13. РїР°СѓР·Р° РїРѕ РґРІРѕР№РЅРѕРјСѓ С‰РµР»С‡РєСѓ
 		if(MHSettings::flag_right_mb_doubleclick) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_DBLCLK, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_DBLCLK, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 14. // нажимать клавишу также при отпускании ЛК мыши
+		// 14. // РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё Р›Рљ РјС‹С€Рё
 		if(MHSettings::flag_left_mb_push_twice) SendDlgItemMessage(hdwnd, IDC_CHECK_LEFT_PUSH_TWICE, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_LEFT_PUSH_TWICE, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 15. // нажимать клавишу также при отпускании ЛК мыши
+		// 15. // РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё Р›Рљ РјС‹С€Рё
 		if(MHSettings::flag_right_mb_push_twice) SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_RIGHT_PUSH_TWICE, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 16. вниз+вбок = простол вниз (режим 1)
+		// 16. РІРЅРёР·+РІР±РѕРє = РїСЂРѕСЃС‚РѕР» РІРЅРёР· (СЂРµР¶РёРј 1)
 		if(MHSettings::flag_downall) SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_DOWNALL, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 17. вниз+вбок сразу отпускать (режим 1)
+		// 17. РІРЅРёР·+РІР±РѕРє СЃСЂР°Р·Сѓ РѕС‚РїСѓСЃРєР°С‚СЊ (СЂРµР¶РёРј 1)
 		if(MHSettings::flag_up_immediately) SendDlgItemMessage(hdwnd, IDC_CHECK_UP_IMMEDIATELY, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_UP_IMMEDIATELY, BM_SETCHECK, BST_UNCHECKED, 0);
 
-		// 18. игнорировать быстрое движение (режим 3)
+		// 18. РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ Р±С‹СЃС‚СЂРѕРµ РґРІРёР¶РµРЅРёРµ (СЂРµР¶РёРј 3)
 		if(MHSettings::flag_skip_fast) SendDlgItemMessage(hdwnd, IDC_CHECK_SKIP_FAST, BM_SETCHECK, BST_CHECKED, 0);
 		else SendDlgItemMessage(hdwnd, IDC_CHECK_SKIP_FAST, BM_SETCHECK, BST_UNCHECKED, 0);
 
@@ -498,37 +514,42 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 
 	if(MHSettings::hh)
 	{
-		// 1. сначала остановить работающий хук
+		// 0. РЈР±СЂР°С‚СЊ РѕРєРЅР°
+		MagicWindow::Hide();
+
+		// 1. СЃРЅР°С‡Р°Р»Р° РѕСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р±РѕС‚Р°СЋС‰РёР№ С…СѓРє
 		restart_hook=true;
 		UnhookWindowsHookEx(handle);
 
-		// 2. Убить все таймеры
+		// 2. РЈР±РёС‚СЊ РІСЃРµ С‚Р°Р№РјРµСЂС‹
 		KillTimer(hwnd,1);
 		KillTimer(hwnd,2);
 		KillTimer(hwnd,3);
 		KillTimer(hwnd,4);
 		
-		// 3. Сбрасываем MVector и MHKeypad и чё там ещё
+		// 3. РЎР±СЂР°СЃС‹РІР°РµРј MVector Рё MHKeypad Рё С‡С‘ С‚Р°Рј РµС‰С‘
 		MHSettings::hh->Halt();
 		MHSettings::hh->HaltGeneral();
 
 		MHVector::Reset();
-		MHKeypad::Reset(); // !!! А вдруг надо было с шифтом??? Тогда он сбросился в хук-хендлере!!! 
+		MHKeypad::Reset(); // !!! Рђ РІРґСЂСѓРі РЅР°РґРѕ Р±С‹Р»Рѕ СЃ С€РёС„С‚РѕРј??? РўРѕРіРґР° РѕРЅ СЃР±СЂРѕСЃРёР»СЃСЏ РІ С…СѓРє-С…РµРЅРґР»РµСЂРµ!!! 
 
-		// Почему-то Reset не включает перерисовку
+		// РџРѕС‡РµРјСѓ-С‚Рѕ Reset РЅРµ РІРєР»СЋС‡Р°РµС‚ РїРµСЂРµСЂРёСЃРѕРІРєСѓ
 		InvalidateRect(MHhwnd,NULL,TRUE);
 
-		// 4. Текущий HookHandler обнуляем
+		// 4. РўРµРєСѓС‰РёР№ HookHandler РѕР±РЅСѓР»СЏРµРј
 		MHSettings::hh=NULL;
 		flag_stop_emulation=false;
 		flag_left_button_waits=false;
 		flag_right_button_waits=false;
 	}
+
 	return_code=DialogBox(MHInst,MAKEINTRESOURCE(IDD_DIALOG_SETTINGS),hwnd,(DLGPROC)DlgSettingsWndProc);
+	
 	if((!return_code)&&(restart_hook))
 	{
-		// Проинициализировать хук хендлер (пока не знаю, что его нужно проинициализировать)
-		// Продолжаем работать, восстанавливаем хук с начальными параметрами
+		// РџСЂРѕРёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ С…СѓРє С…РµРЅРґР»РµСЂ (РїРѕРєР° РЅРµ Р·РЅР°СЋ, С‡С‚Рѕ РµРіРѕ РЅСѓР¶РЅРѕ РїСЂРѕРёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ)
+		// РџСЂРѕРґРѕР»Р¶Р°РµРј СЂР°Р±РѕС‚Р°С‚СЊ, РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј С…СѓРє СЃ РЅР°С‡Р°Р»СЊРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё
 		flag_left_button_key=false;
 		top_position=-1; 
 		handle = SetWindowsHookEx(WH_MOUSE_LL, 
@@ -537,11 +558,16 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
                                  NULL);
 	}
 
+	if(!return_code)
+	{
+		MagicWindow::ShowRuntime();
+	}
+
 	return return_code;
 }
 
 //=======================================================================================================
-//  Считывать конфигурацию
+//  РЎС‡РёС‚С‹РІР°С‚СЊ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ
 //=======================================================================================================
 
 
@@ -549,7 +575,7 @@ typedef enum {save_empty,save_int,save_bool,save_WORD, save_DWORD,save_LONG} T_s
 
 typedef struct
 {
-	char *name; // Название в файле конфигурации
+	char *name; // РќР°Р·РІР°РЅРёРµ РІ С„Р°Р№Р»Рµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 	T_save_type save_type;
 	void *pointer;
 	T_save_type check_type;
@@ -583,17 +609,17 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"DeadzoneX",save_int,&dlg_current_deadzone_x,save_int,&dlg_deadzones, MH_DEAD_ZONES},
 	{"DeadzoneY",save_int,&dlg_current_deadzone_y,save_int,&dlg_deadzones, MH_DEAD_ZONES}, //18
 	
-	// 2.2 Режим 3 для одной из осей в режиме 4
+	// 2.2 Р РµР¶РёРј 3 РґР»СЏ РѕРґРЅРѕР№ РёР· РѕСЃРµР№ РІ СЂРµР¶РёРјРµ 4
 	{"Mode3Axe",save_int,&dlg_current_mode3axe,save_int,&dlg_mode3axe, MH_DEAD_ZONES},
 	{"FastSpeed",save_int,&dlg_current_speed,save_int,&dlg_speed, MH_NUM_SPEED},
 	{"Directions",save_int,&dlg_current_direction,save_int,&dlg_dirs, MH_NUM_DIRECTIONS},
-	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 7}, // Количество режимов (на самом деле нулевого нет, то есть 6)
+	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 7}, // РљРѕР»РёС‡РµСЃС‚РІРѕ СЂРµР¶РёРјРѕРІ (РЅР° СЃР°РјРѕРј РґРµР»Рµ РЅСѓР»РµРІРѕРіРѕ РЅРµС‚, С‚Рѕ РµСЃС‚СЊ 6)
 
-	// 4. Таймаут
+	// 4. РўР°Р№РјР°СѓС‚
 	{"TimeoutMove",save_int,&dlg_current_timeout,save_int,dlg_timeout,MH_NUM_TIMEOUT}, //23
-	// 4.5. Таймаут переключения левой кнопки мыши
+	// 4.5. РўР°Р№РјР°СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 	{"TimeoutSwitchLeftMB",save_int,&dlg_current_switch_timeout,save_int,dlg_switch_timeout,MH_NUM_SWITCH_TIMEOUT},
-	// 6. Разрешить ли нажатие пятой кнопки при быстром движении мышью  и далее
+	// 6. Р Р°Р·СЂРµС€РёС‚СЊ Р»Рё РЅР°Р¶Р°С‚РёРµ РїСЏС‚РѕР№ РєРЅРѕРїРєРё РїСЂРё Р±С‹СЃС‚СЂРѕРј РґРІРёР¶РµРЅРёРё РјС‹С€СЊСЋ  Рё РґР°Р»РµРµ
 	{"FastPush", save_bool, &MHSettings::flag_enable_speed_button,save_empty,0,0}, // 25
 	{"2Moves", save_bool, &MHSettings::flag_2moves,save_empty,0,0},
 	{"2MovesMode1", save_bool, &MHSettings::flag_2moves_mode1,save_empty,0,0},
@@ -611,54 +637,55 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"UpImmediately", save_bool, &MHSettings::flag_up_immediately,save_empty,0,0}
 };
 
-int MHSettings::OpenMHookConfig(HWND hwnd, char *default_filename)
+int MHSettings::OpenMHookConfig(HWND hwnd, TCHAR *default_filename)
 {
 	if(NULL==default_filename)
 	{
-		// выводим диалог
+		// РІС‹РІРѕРґРёРј РґРёР°Р»РѕРі
 		OPENFILENAME ofn=
 		{
 			sizeof(OPENFILENAME),
 			hwnd,
-			NULL, // в данном конкретном случае игнорируется
+			NULL, // РІ РґР°РЅРЅРѕРј РєРѕРЅРєСЂРµС‚РЅРѕРј СЃР»СѓС‡Р°Рµ РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ
 			filter_MHOOK,
 			NULL,
-			0, // Не используем custom filter
+			0, // РќРµ РёСЃРїРѕР»СЊР·СѓРµРј custom filter
 			0, // -"-
 			tfilename,
 			256,
 			tfiletitle,
 			256,
 			NULL,
-			"Открыть файл конфигурации MHOOK",
+			L"РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё MHOOK",
 			OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ,
 			0,
 			0,
-			"MHOOK",
+			L"MHOOK",
 			0,0,0
 		};
 
-		// Диалог запроса имени файла
+		// Р”РёР°Р»РѕРі Р·Р°РїСЂРѕСЃР° РёРјРµРЅРё С„Р°Р№Р»Р°
 		if(0==GetOpenFileName(&ofn))
 		{
 			return 1;
 		}
 			
-		// Имя файла показать в диалоге
+		// РРјСЏ С„Р°Р№Р»Р° РїРѕРєР°Р·Р°С‚СЊ РІ РґРёР°Р»РѕРіРµ
 		SendDlgItemMessage(hwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
 	}
-	else // Имя файла получено в качестве параметра функции
+	else // РРјСЏ С„Р°Р№Р»Р° РїРѕР»СѓС‡РµРЅРѕ РІ РєР°С‡РµСЃС‚РІРµ РїР°СЂР°РјРµС‚СЂР° С„СѓРЅРєС†РёРё
 	{
-		strcpy(tfilename,default_filename);
+		wcscpy_s(tfilename,default_filename);
 	}
 
-	FILE *fin=fopen(tfilename,"r");
+	FILE *fin=NULL;
+	_wfopen_s(&fin,tfilename,L"r");
 	if(NULL==fin)
 	{
-		strcpy(char_buf,"Не могу открыть файл: '");
-		strncat(char_buf,tfilename,1000);
-		strcat(char_buf,"'");
-		MHReportError(char_buf);
+		wcscpy_s(tchar_buf,L"РќРµ РјРѕРіСѓ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»: '");
+		wcsncat_s(tchar_buf,tfilename,1000);
+		wcsncat_s(tchar_buf,L"'",2);
+		MHReportError(tchar_buf);
 		return (-1);
 	}
 
@@ -667,85 +694,85 @@ int MHSettings::OpenMHookConfig(HWND hwnd, char *default_filename)
 	T_save_struct ss;
 	bool found;
 
-	// Сюда считываются числа
+	// РЎСЋРґР° СЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ С‡РёСЃР»Р°
 	int int_arg1, int_arg2;
 	WORD WORD_arg;
 
-	// Читаем все строки одну за другой
-	while(1==fscanf(fin,"%s",char_buf))
+	// Р§РёС‚Р°РµРј РІСЃРµ СЃС‚СЂРѕРєРё РѕРґРЅСѓ Р·Р° РґСЂСѓРіРѕР№
+	while(1==fscanf_s(fin,"%s",char_buf, _countof(char_buf)))
 	{
 		found=false;
-		for(i=0;i<NUM_SAVE_LINES;i++) // Перебираем все возможные параметры
+		for(i=0;i<NUM_SAVE_LINES;i++) // РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РІРѕР·РјРѕР¶РЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹
 		{
 			if(0==strncmp(char_buf,save_struct[i].name,sizeof(char_buf)-1))
 			{
 				ss=save_struct[i];
 				
-				fgets(char_buf,sizeof(char_buf)-1,fin); // Остаток строки загоняем в буфер
+				fgets(char_buf,sizeof(char_buf)-1,fin); // РћСЃС‚Р°С‚РѕРє СЃС‚СЂРѕРєРё Р·Р°РіРѕРЅСЏРµРј РІ Р±СѓС„РµСЂ
 				switch(ss.save_type)
 				{
 				case save_int:
-					// Кроме индекса нужно считать ещё и значение одного из... N типов
+					// РљСЂРѕРјРµ РёРЅРґРµРєСЃР° РЅСѓР¶РЅРѕ СЃС‡РёС‚Р°С‚СЊ РµС‰С‘ Рё Р·РЅР°С‡РµРЅРёРµ РѕРґРЅРѕРіРѕ РёР·... N С‚РёРїРѕРІ
 					switch(ss.check_type)
 					{
 					case save_int:
-						if(2!=sscanf(char_buf,"%d %d",&int_arg1,&int_arg2)) goto load_error;
+						if(2!=sscanf_s(char_buf,"%d %d",&int_arg1,&int_arg2)) goto load_error;
 						if((int_arg1<0)||(int_arg1>=ss.max_index)) goto load_error;
-						// Проверка, что по указанному индексу лежит правлильное значение
-						if( ((MHIntChar *)(ss.check_pointer) + int_arg1)->value != int_arg2 ) goto load_error; // индекс не соответствует значению
-						*((int *)ss.pointer)=int_arg1; // Всё правильно, прописываем
+						// РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ Р»РµР¶РёС‚ РїСЂР°РІР»РёР»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
+						if( ((MHIntChar *)(ss.check_pointer) + int_arg1)->value != int_arg2 ) goto load_error; // РёРЅРґРµРєСЃ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р·РЅР°С‡РµРЅРёСЋ
+						*((int *)ss.pointer)=int_arg1; // Р’СЃС‘ РїСЂР°РІРёР»СЊРЅРѕ, РїСЂРѕРїРёСЃС‹РІР°РµРј
 						break;
 
 					case save_WORD:
-						if(2!=sscanf(char_buf,"%d %hx",&int_arg1,&WORD_arg)) goto load_error;
+						if(2!=sscanf_s(char_buf,"%d %hx",&int_arg1,&WORD_arg)) goto load_error;
 						if((int_arg1<0)||(int_arg1>=ss.max_index)) goto load_error;
-						// Проверка, что по указанному индексу лежит правлильное значение
-						if( ((MHWORDChar *)(ss.check_pointer) + int_arg1)->value != WORD_arg ) goto load_error; // индекс не соответствует значению
-						//*((WORD *)ss.pointer)=WORD_arg; // Всё правильно, прописываем
+						// РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ Р»РµР¶РёС‚ РїСЂР°РІР»РёР»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
+						if( ((MHWORDChar *)(ss.check_pointer) + int_arg1)->value != WORD_arg ) goto load_error; // РёРЅРґРµРєСЃ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р·РЅР°С‡РµРЅРёСЋ
+						//*((WORD *)ss.pointer)=WORD_arg; // Р’СЃС‘ РїСЂР°РІРёР»СЊРЅРѕ, РїСЂРѕРїРёСЃС‹РІР°РµРј
 						*((int *)ss.pointer)=int_arg1;
 						break;
 
-					case save_empty: // Берём не из списка значений, а прямо
-						if(1!=sscanf(char_buf,"%d",&int_arg1)) goto load_error;
+					case save_empty: // Р‘РµСЂС‘Рј РЅРµ РёР· СЃРїРёСЃРєР° Р·РЅР°С‡РµРЅРёР№, Р° РїСЂСЏРјРѕ
+						if(1!=sscanf_s(char_buf,"%d",&int_arg1)) goto load_error;
 						if((int_arg1<0)||(int_arg1>=ss.max_index)) goto load_error;
 						*((int *)ss.pointer)=int_arg1;
 						break;
 
 					default:
-						goto load_error; // Не умеем обрабатывать
+						goto load_error; // РќРµ СѓРјРµРµРј РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ
 					} // switch check_type
 					break;
 
 				case save_bool:
-					// Используем временную переменную типа int
-					if(1!=sscanf(char_buf,"%d",&int_arg1)) goto load_error;
+					// РСЃРїРѕР»СЊР·СѓРµРј РІСЂРµРјРµРЅРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ С‚РёРїР° int
+					if(1!=sscanf_s(char_buf,"%d",&int_arg1)) goto load_error;
 					*((bool *)ss.pointer)=int_arg1;
 					break;
 
 				default:
-					goto load_error; // Не умеем обрабатывать
+					goto load_error; // РќРµ СѓРјРµРµРј РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ
 				}
 
-				num_succeeded++; // Количество успешно считанных параметров
+				num_succeeded++; // РљРѕР»РёС‡РµСЃС‚РІРѕ СѓСЃРїРµС€РЅРѕ СЃС‡РёС‚Р°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
 				found=true;
-				break; // Не нужно больше сравнивать, выходим из цикла
-			} // если найдена строка
+				break; // РќРµ РЅСѓР¶РЅРѕ Р±РѕР»СЊС€Рµ СЃСЂР°РІРЅРёРІР°С‚СЊ, РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р°
+			} // РµСЃР»Рё РЅР°Р№РґРµРЅР° СЃС‚СЂРѕРєР°
 			
 		} // for
 		if(!found) 
-			goto load_error; // наткнулись на неизвестную строку
+			goto load_error; // РЅР°С‚РєРЅСѓР»РёСЃСЊ РЅР° РЅРµРёР·РІРµСЃС‚РЅСѓСЋ СЃС‚СЂРѕРєСѓ
 	}
 
 #ifdef _DEBUG
-	sprintf(char_buf,"Файл конфигурации прочитан без ошибок.\nЧисло считанных параметров: %d", num_succeeded);
-	MHReportError(char_buf,hwnd);
+	swprintf_s(tchar_buf,L"Р¤Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРѕС‡РёС‚Р°РЅ Р±РµР· РѕС€РёР±РѕРє.\r\nР§РёСЃР»Рѕ СЃС‡РёС‚Р°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ: %d", num_succeeded);
+	MHReportError(tchar_buf,hwnd);
 #endif
 	return 0;
 
 
 load_error:
-	sprintf(char_buf,"Файл конфигурации прочитан с ошибками.\nВозможно, он от другой версии программы.\nОднако, число успешно считанных параметров: %d\n(Рекомендую сохранить конфигурацию заново)", num_succeeded);
-	MHReportError(char_buf,hwnd);
+	swprintf_s(tchar_buf,L"Р¤Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРѕС‡РёС‚Р°РЅ СЃ РѕС€РёР±РєР°РјРё.\r\nР’РѕР·РјРѕР¶РЅРѕ, РѕРЅ РѕС‚ РґСЂСѓРіРѕР№ РІРµСЂСЃРёРё РїСЂРѕРіСЂР°РјРјС‹.\r\nРћРґРЅР°РєРѕ, С‡РёСЃР»Рѕ СѓСЃРїРµС€РЅРѕ СЃС‡РёС‚Р°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ: %d\r\n(Р РµРєРѕРјРµРЅРґСѓСЋ СЃРѕС…СЂР°РЅРёС‚СЊ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ Р·Р°РЅРѕРІРѕ)", num_succeeded);
+	MHReportError(tchar_buf,hwnd);
 	return -1;
 }
 
@@ -753,45 +780,46 @@ load_error:
 
 int MHSettings::SaveMHookConfig(HWND hwnd)
 {
-	// Сначала выводим диалог
+	// РЎРЅР°С‡Р°Р»Р° РІС‹РІРѕРґРёРј РґРёР°Р»РѕРі
 	OPENFILENAME ofn=
 	{
 		sizeof(OPENFILENAME),
 		hwnd,
-		NULL, // в данном конкретном случае игнорируется
+		NULL, // РІ РґР°РЅРЅРѕРј РєРѕРЅРєСЂРµС‚РЅРѕРј СЃР»СѓС‡Р°Рµ РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ
 		filter_MHOOK,
 		NULL,
-		0, // Не используем custom filter
+		0, // РќРµ РёСЃРїРѕР»СЊР·СѓРµРј custom filter
 		0, // -"-
 		tfilename,
 		256,
 		tfiletitle,
 		256,
 		NULL,
-		"Сохранить файл конфигурации MHOOK",
+		L"РЎРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё MHOOK",
 		OFN_OVERWRITEPROMPT,
 		0,
 		0,
-		"MHOOK",
+		L"MHOOK",
 		0,0,0
 	};
 
-	// Диалог запроса имени файла
+	// Р”РёР°Р»РѕРі Р·Р°РїСЂРѕСЃР° РёРјРµРЅРё С„Р°Р№Р»Р°
 	if(0==GetSaveFileName(&ofn))
 	{
 		return 1;
 	}
 
-	// Имя файла показать в диалоге
+	// РРјСЏ С„Р°Р№Р»Р° РїРѕРєР°Р·Р°С‚СЊ РІ РґРёР°Р»РѕРіРµ
 	SendDlgItemMessage(hwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
 
-	FILE *fout=fopen(tfilename,"w");
+	FILE *fout=NULL;
+	_wfopen_s(&fout,tfilename,L"w");
 	if(NULL==fout)
 	{
-		strcpy(char_buf,"Не могу создать файл: '");
-		strncat(char_buf,tfilename,1000);
-		strcat(char_buf,"'");
-		MHReportError(char_buf);
+		wcscpy_s(tchar_buf,L"РќРµ РјРѕРіСѓ СЃРѕР·РґР°С‚СЊ С„Р°Р№Р»: '");
+		wcsncat_s(tchar_buf,tfilename,1000);
+		wcsncat_s(tchar_buf,L"'",2);
+		MHReportError(tchar_buf);
 		return (-1);
 	}
 
@@ -799,10 +827,10 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 	for(int i=0;i<NUM_SAVE_LINES;i++)
 	{
 		ss=save_struct[i];
-		// Сохраняем Имя вне зависимости от типа
+		// РЎРѕС…СЂР°РЅСЏРµРј РРјСЏ РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР°
 		fprintf(fout,"%s ",ss.name);
 		
-		// Основное значение (индекс)
+		// РћСЃРЅРѕРІРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ (РёРЅРґРµРєСЃ)
 		switch(ss.save_type)
 		{
 		case save_int:
@@ -814,7 +842,7 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 			break;
 		}
 
-		// Проверочное значение
+		// РџСЂРѕРІРµСЂРѕС‡РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
 		switch(ss.check_type)
 		{
 		case save_int:
@@ -827,7 +855,7 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 		}
 
 
-		// Перевод строки
+		// РџРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё
 		fprintf(fout,"\n");
 	}
 
@@ -836,14 +864,14 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 }
 
 //===============================================================================================
-// Копирует из полей диалога в реальные переменные
+// РљРѕРїРёСЂСѓРµС‚ РёР· РїРѕР»РµР№ РґРёР°Р»РѕРіР° РІ СЂРµР°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 //===============================================================================================
 void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 {
 			dlg_current_sensitivity=SendDlgItemMessage(hdwnd,IDC_SENSITIVITY, CB_GETCURSEL, 0, 0L);
 			MHSettings::SetMouseSensitivity(dlg_sensitivity[dlg_current_sensitivity].value);
 
-			// 2. Кнопки
+			// 2. РљРЅРѕРїРєРё
 			dlg_current_scancodes[0]=SendDlgItemMessage(hdwnd,IDC_UP, CB_GETCURSEL, 0, 0L);
 			dlg_current_scancodes[1]=SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_GETCURSEL, 0, 0L);
 			dlg_current_scancodes[2]=SendDlgItemMessage(hdwnd,IDC_DOWN, CB_GETCURSEL, 0, 0L);
@@ -877,26 +905,26 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				dlg_scancodes[dlg_current_scancodes[14]].value);
 			
 
-			// 2.1. Мёртвые зоны
+			// 2.1. РњС‘СЂС‚РІС‹Рµ Р·РѕРЅС‹
 			dlg_current_deadzone_x=SendDlgItemMessage(hdwnd,IDC_DEADX, CB_GETCURSEL, 0, 0L);
 			MHSettings::deadx=dlg_deadzones[dlg_current_deadzone_x].value; 
 			dlg_current_deadzone_y=SendDlgItemMessage(hdwnd,IDC_DEADY, CB_GETCURSEL, 0, 0L);
 			MHSettings::deady=dlg_deadzones[dlg_current_deadzone_y].value; 
 
-			// 2.2 Режим 3 для одной из осей в режиме 4
+			// 2.2 Р РµР¶РёРј 3 РґР»СЏ РѕРґРЅРѕР№ РёР· РѕСЃРµР№ РІ СЂРµР¶РёРјРµ 4
 			dlg_current_mode3axe=SendDlgItemMessage(hdwnd,IDC_MODE3AXE, CB_GETCURSEL, 0, 0L);
 			MHSettings::mode3axe=dlg_mode3axe[dlg_current_mode3axe].value; 
 
-			// 2.5. Минимальная скорость мыши для нажатия на пятую кнопку
+			// 2.5. РњРёРЅРёРјР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РјС‹С€Рё РґР»СЏ РЅР°Р¶Р°С‚РёСЏ РЅР° РїСЏС‚СѓСЋ РєРЅРѕРїРєСѓ
 			dlg_current_speed=SendDlgItemMessage(hdwnd,IDC_SPEED, CB_GETCURSEL, 0, 0L);
 			MHSettings::minimal_mouse_speed=dlg_speed[dlg_current_speed].value;
 
-			// 2.6. Число направлений
+			// 2.6. Р§РёСЃР»Рѕ РЅР°РїСЂР°РІР»РµРЅРёР№
 			dlg_current_direction=SendDlgItemMessage(hdwnd,IDC_DIRECTIONS, CB_GETCURSEL, 0, 0L);
 			MHSettings::SetNumPositions(dlg_dirs[dlg_current_direction].value);
 
-			// 3. Радио-кнопка
-			MHSettings::flag_no_move_right_mb=false; // Во всех режимах, кроме пятого
+			// 3. Р Р°РґРёРѕ-РєРЅРѕРїРєР°
+			MHSettings::flag_no_move_right_mb=false; // Р’Рѕ РІСЃРµС… СЂРµР¶РёРјР°С…, РєСЂРѕРјРµ РїСЏС‚РѕРіРѕ
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO1,BM_GETCHECK, 0, 0))
 			{ 
 				MHSettings::mode=1;
@@ -916,33 +944,33 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 			{
 				MHSettings::mode=4;
 				MHSettings::hh=&hh4;
-				// Важно!!! В 4 режиме принудительно выставить 8 позиций!!!
+				// Р’Р°Р¶РЅРѕ!!! Р’ 4 СЂРµР¶РёРјРµ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹СЃС‚Р°РІРёС‚СЊ 8 РїРѕР·РёС†РёР№!!!
 				MHSettings::SetNumPositions(8); dlg_current_direction=1;
 			}
 			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO5,BM_GETCHECK, 0, 0)) 
 			{
 				MHSettings::mode=5;
 				MHSettings::hh=&hh5;
-				// Важно!!! В 5 режиме принудительно запрещается движение курсора при правом нажатии!!
+				// Р’Р°Р¶РЅРѕ!!! Р’ 5 СЂРµР¶РёРјРµ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ Р·Р°РїСЂРµС‰Р°РµС‚СЃСЏ РґРІРёР¶РµРЅРёРµ РєСѓСЂСЃРѕСЂР° РїСЂРё РїСЂР°РІРѕРј РЅР°Р¶Р°С‚РёРё!!
 				MHSettings::flag_no_move_right_mb=true;
-				MHSettings::SetNumPositions(8); dlg_current_direction=1; // и принудительно выставить 8 позиций!!!
+				MHSettings::SetNumPositions(8); dlg_current_direction=1; // Рё РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹СЃС‚Р°РІРёС‚СЊ 8 РїРѕР·РёС†РёР№!!!
 			}
 			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO6,BM_GETCHECK, 0, 0)) 
 			{
 				MHSettings::mode=6;
 				MHSettings::hh=&hh6;
-				// Важно!!! В 6 режиме принудительно выставить 4 позиций!!!
+				// Р’Р°Р¶РЅРѕ!!! Р’ 6 СЂРµР¶РёРјРµ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹СЃС‚Р°РІРёС‚СЊ 4 РїРѕР·РёС†РёР№!!!
 				MHSettings::SetNumPositions(4); dlg_current_direction=0;
 			}
 			//else
 
-			// 3.2. - кнопка не используется
+			// 3.2. - РєРЅРѕРїРєР° РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
 
-			// 4. Таймаут
+			// 4. РўР°Р№РјР°СѓС‚
 			dlg_current_timeout=SendDlgItemMessage(hdwnd,IDC_TIMEOUT, CB_GETCURSEL, 0, 0L);
 			MHSettings::timeout_after_move=dlg_timeout[dlg_current_timeout].value;
 
-			// 4.5. Таймаут переключения режима левой кнопки мыши
+			// 4.5. РўР°Р№РјР°СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ СЂРµР¶РёРјР° Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 			dlg_current_switch_timeout=SendDlgItemMessage(hdwnd,IDC_SWITCH_TIMEOUT, CB_GETCURSEL, 0, 0L);
 			MHSettings::timeout_mouse_switch=dlg_switch_timeout[dlg_current_switch_timeout].value;
 
@@ -951,68 +979,68 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 			MHSettings::circle_scale_factor=dlg_circlescales[dlg_current_circlescale].value;
 			
 
-			// 6. Разрешить ли нажатие пятой кнопки при быстром движении мышью
+			// 6. Р Р°Р·СЂРµС€РёС‚СЊ Р»Рё РЅР°Р¶Р°С‚РёРµ РїСЏС‚РѕР№ РєРЅРѕРїРєРё РїСЂРё Р±С‹СЃС‚СЂРѕРј РґРІРёР¶РµРЅРёРё РјС‹С€СЊСЋ
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_FAST_PUSH,BM_GETCHECK, 0, 0))
 				MHSettings::flag_enable_speed_button=true;
 			else MHSettings::flag_enable_speed_button=false;
 
-			// 7. Использовать ли в 4 режиме движение в 2 шага 
+			// 7. РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё РІ 4 СЂРµР¶РёРјРµ РґРІРёР¶РµРЅРёРµ РІ 2 С€Р°РіР° 
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_2MOVES,BM_GETCHECK, 0, 0))
 				MHSettings::flag_2moves=true;
 			else MHSettings::flag_2moves=false;
 
-			// 8. Использовать ли в 1 режиме движение в 2 шага 
+			// 8. РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё РІ 1 СЂРµР¶РёРјРµ РґРІРёР¶РµРЅРёРµ РІ 2 С€Р°РіР° 
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_2MOVES_MODE1,BM_GETCHECK, 0, 0))
 				MHSettings::flag_2moves_mode1=true;
 			else MHSettings::flag_2moves_mode1=false;
 
-			// 9. можно ли менять направление движения на ходу 
+			// 9. РјРѕР¶РЅРѕ Р»Рё РјРµРЅСЏС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёРµ РґРІРёР¶РµРЅРёСЏ РЅР° С…РѕРґСѓ 
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_CHANGE_DIRECTION_ONTHEWAY,BM_GETCHECK, 0, 0))
 				MHSettings::flag_change_direction_ontheway=true;
 			else MHSettings::flag_change_direction_ontheway=false;
 			
-			// 10. правая кнопка мыши вместо обычного поведения ведёт себя, как клавиша 
+			// 10. РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё РІРјРµСЃС‚Рѕ РѕР±С‹С‡РЅРѕРіРѕ РїРѕРІРµРґРµРЅРёСЏ РІРµРґС‘С‚ СЃРµР±СЏ, РєР°Рє РєР»Р°РІРёС€Р° 
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_MB_ISKEY,BM_GETCHECK, 0, 0))
 				MHSettings::flag_right_mb_iskey=true;
 			else MHSettings::flag_right_mb_iskey=false;
 
-			// 11. две альтернативные раскладки
+			// 11. РґРІРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ СЂР°СЃРєР»Р°РґРєРё
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_2ALT,BM_GETCHECK, 0, 0))
 				MHSettings::flag_alt2=true;
 			else MHSettings::flag_alt2=false;
 
-			// 12. автоклик в режиме 5
+			// 12. Р°РІС‚РѕРєР»РёРє РІ СЂРµР¶РёРјРµ 5
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_AUTOCLICK,BM_GETCHECK, 0, 0))
 				MHSettings::flag_mode5autoclick=true;
 			else MHSettings::flag_mode5autoclick=false;
 
-			// 13. Стоп эмуляции по двойному щелчку
+			// 13. РЎС‚РѕРї СЌРјСѓР»СЏС†РёРё РїРѕ РґРІРѕР№РЅРѕРјСѓ С‰РµР»С‡РєСѓ
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_DBLCLK,BM_GETCHECK, 0, 0))
 				MHSettings::flag_right_mb_doubleclick=true;
 			else MHSettings::flag_right_mb_doubleclick=false;
 
-			// 14. нажимать клавишу также при отпускании ЛК мыши
+			// 14. РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё Р›Рљ РјС‹С€Рё
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_LEFT_PUSH_TWICE,BM_GETCHECK, 0, 0))
 				MHSettings::flag_left_mb_push_twice=true;
 			else MHSettings::flag_left_mb_push_twice=false;
 
-			// 15. нажимать клавишу также при отпускании ЛК мыши
+			// 15. РЅР°Р¶РёРјР°С‚СЊ РєР»Р°РІРёС€Сѓ С‚Р°РєР¶Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё Р›Рљ РјС‹С€Рё
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_RIGHT_PUSH_TWICE,BM_GETCHECK, 0, 0))
 				MHSettings::flag_right_mb_push_twice=true;
 			else MHSettings::flag_right_mb_push_twice=false;
 
-			// 16. вниз+вбок = простол вниз (режим 1)
+			// 16. РІРЅРёР·+РІР±РѕРє = РїСЂРѕСЃС‚Рѕ РІРЅРёР· (СЂРµР¶РёРј 1)
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_DOWNALL,BM_GETCHECK, 0, 0))
 				MHSettings::flag_downall=true;
 			else MHSettings::flag_downall=false;
 
-			// 17. вниз+вбок сразу отпускать (режим 1)
+			// 17. РІРЅРёР·+РІР±РѕРє СЃСЂР°Р·Сѓ РѕС‚РїСѓСЃРєР°С‚СЊ (СЂРµР¶РёРј 1)
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_UP_IMMEDIATELY,BM_GETCHECK, 0, 0))
 				MHSettings::flag_up_immediately=true;
 			else MHSettings::flag_up_immediately=false;
 
 
-			// 18. игнорировать быстрое движение (режим 3)
+			// 18. РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ Р±С‹СЃС‚СЂРѕРµ РґРІРёР¶РµРЅРёРµ (СЂРµР¶РёРј 3)
 			if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_CHECK_SKIP_FAST,BM_GETCHECK, 0, 0))
 				MHSettings::flag_skip_fast=true;
 			else MHSettings::flag_skip_fast=false;

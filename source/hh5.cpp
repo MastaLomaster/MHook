@@ -1,4 +1,4 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "hh5.h"
 #include "MVector.h"
 #include "MHKeypad.h"
@@ -13,22 +13,22 @@ void MHookHandler5::OnMouseMove(LONG _x, LONG _y)
 	DWORD time_now;
 	static int x;
 		
-	// При нажатой правой кнопке мыши не передаём её движения в MHVector,
-	// НО! продолжаем отслеживать last_x и last_y, не сбрасывая initialized! 
-	if((initialized)&&(rbutton_pressed)) // известно последнее положение мыши, правая кнопка не нажата
+	// РџСЂРё РЅР°Р¶Р°С‚РѕР№ РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ РјС‹С€Рё РЅРµ РїРµСЂРµРґР°С‘Рј РµС‘ РґРІРёР¶РµРЅРёСЏ РІ MHVector,
+	// РќРћ! РїСЂРѕРґРѕР»Р¶Р°РµРј РѕС‚СЃР»РµР¶РёРІР°С‚СЊ last_x Рё last_y, РЅРµ СЃР±СЂР°СЃС‹РІР°СЏ initialized! 
+	if((initialized)&&(rbutton_pressed)) // РёР·РІРµСЃС‚РЅРѕ РїРѕСЃР»РµРґРЅРµРµ РїРѕР»РѕР¶РµРЅРёРµ РјС‹С€Рё, РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РЅРµ РЅР°Р¶Р°С‚Р°
 	{
 		dx=(_x-last_x);
 		dy=(_y-last_y);
 
-		// Может, пятую кнопку можно нажать?
+		// РњРѕР¶РµС‚, РїСЏС‚СѓСЋ РєРЅРѕРїРєСѓ РјРѕР¶РЅРѕ РЅР°Р¶Р°С‚СЊ?
 		if(MHSettings::flag_enable_speed_button) OnFastMove(dx,dy);
 		
-		if(0==MHSettings::circle_scale_factor) // Просим опознать 8 направлений
+		if(0==MHSettings::circle_scale_factor) // РџСЂРѕСЃРёРј РѕРїРѕР·РЅР°С‚СЊ 8 РЅР°РїСЂР°РІР»РµРЅРёР№
 		{
 			position=MHVector::NewValues(dx,dy);
 
-			// Если не нажата правая кнопка мыши, вообще игнорируем
-			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
+			// Р•СЃР»Рё РЅРµ РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё, РІРѕРѕР±С‰Рµ РёРіРЅРѕСЂРёСЂСѓРµРј
+			if(0<=position) // -2=РјС‹С€СЊ РїРѕРґРІРёРЅСѓР»Р°СЃСЊ РЅР° РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕРµ СЂР°СЃС‚РѕСЏРЅРёРµ, -1= РЅР°РїСЂР°РІР»РµРЅРёРµ РЅРµ РёР·РјРµРЅРёР»РѕСЃСЊ
 			{
 				MHKeypad::Press8(position,true);
 				position_mem=position;
@@ -55,8 +55,8 @@ void MHookHandler5::OnMouseMove(LONG _x, LONG _y)
 
 	if(!initialized) initialized=true;
 
-	// О, здесь крылась ужасная ошибка!
-	// Если мы не даём мыши двигаться, то не надо обновлять last_x и last_y !!!
+	// Рћ, Р·РґРµСЃСЊ РєСЂС‹Р»Р°СЃСЊ СѓР¶Р°СЃРЅР°СЏ РѕС€РёР±РєР°!
+	// Р•СЃР»Рё РјС‹ РЅРµ РґР°С‘Рј РјС‹С€Рё РґРІРёРіР°С‚СЊСЃСЏ, С‚Рѕ РЅРµ РЅР°РґРѕ РѕР±РЅРѕРІР»СЏС‚СЊ last_x Рё last_y !!!
 	if(!((rbutton_pressed)&&(MHSettings::flag_no_move_right_mb)))
 	{
 		last_x=_x;
@@ -74,19 +74,19 @@ bool MHookHandler5::OnRDown()
 	rbutton_pressed=true;
 	position_mem=-1;
 	movement_happened=false;
-	//MHKeypad::Reset(); // Отпускаем нажатые кнопки
-	return true; // подавляйте правый клик
+	//MHKeypad::Reset(); // РћС‚РїСѓСЃРєР°РµРј РЅР°Р¶Р°С‚С‹Рµ РєРЅРѕРїРєРё
+	return true; // РїРѕРґР°РІР»СЏР№С‚Рµ РїСЂР°РІС‹Р№ РєР»РёРє
 }
 
 bool MHookHandler5::OnRUp()
 {
 	rbutton_pressed=false;
-	// Начинаем новый отсчет движений
+	// РќР°С‡РёРЅР°РµРј РЅРѕРІС‹Р№ РѕС‚СЃС‡РµС‚ РґРІРёР¶РµРЅРёР№
 	MHVector::Reset();
 	if(-1!=position_mem) MHKeypad::Press8(position_mem,false);
 
 
-	// Автоклик
+	// РђРІС‚РѕРєР»РёРє
 	if(movement_happened)
 	{
 		if(MHSettings::flag_mode5autoclick)
@@ -100,10 +100,10 @@ bool MHookHandler5::OnRUp()
 			SendInput(2,&input[0],sizeof(INPUT));
 		}
 	}
-	else // Нажимаем кнопку (сброс)
+	else // РќР°Р¶РёРјР°РµРј РєРЅРѕРїРєСѓ (СЃР±СЂРѕСЃ)
 	{
 		MHKeypad::Press4(10,true);
 		MHKeypad::Press4(10,false);
 	}
-	return true; // подавляйте правый клик
+	return true; // РїРѕРґР°РІР»СЏР№С‚Рµ РїСЂР°РІС‹Р№ РєР»РёРє
 }

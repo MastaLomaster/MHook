@@ -1,14 +1,14 @@
-#include <Windows.h>
+п»ї#include <Windows.h>
 #include "MHKeypad.h"
 #include "Settings.h"
 
-// У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
-// Потом вынести это на экран параметров
+// РЈ РЎР°С€Рё Р—РµРЅСЊРєРѕ СЂРѕР»СЊ РїСЂР°РІРѕР№ РєРЅРѕРїРєРё РІС‹РїРѕР»РЅСЏРµС‚ РєРѕР»С‘СЃРёРєРѕ!!! Рђ РЅР°СЃС‚РѕСЏС‰Р°СЏ РїСЂР°РІР°СЏ РґРµР»Р°РµС‚ С‚РѕР»СЊРєРѕ СЃРєСЂРѕР»Р»
+// РџРѕС‚РѕРј РІС‹РЅРµСЃС‚Рё СЌС‚Рѕ РЅР° СЌРєСЂР°РЅ РїР°СЂР°РјРµС‚СЂРѕРІ
 #undef SASHA_ZENKO
 
-extern HWND		MHhwnd; // Нужна для установки таймера
-extern LONG screen_x, screen_y; // Для определения углов экрана
-extern bool flag_inside_window; // Определён в оконной процедуре, показывает, что мы внутри окна
+extern HWND		MHhwnd; // РќСѓР¶РЅР° РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё С‚Р°Р№РјРµСЂР°
+extern LONG screen_x, screen_y; // Р”Р»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ СѓРіР»РѕРІ СЌРєСЂР°РЅР°
+extern bool flag_inside_window; // РћРїСЂРµРґРµР»С‘РЅ РІ РѕРєРѕРЅРЅРѕР№ РїСЂРѕС†РµРґСѓСЂРµ, РїРѕРєР°Р·С‹РІР°РµС‚, С‡С‚Рѕ РјС‹ РІРЅСѓС‚СЂРё РѕРєРЅР°
 
 bool flag_scroll_started=false;
 bool flag_stop_mouse=false;
@@ -22,14 +22,14 @@ bool flag_right_button_waits=false;
 static DWORD last_right_down_time;
 
 //static DWORD last_screen_top_time;
-int top_position=-1; // 0 - левый верхний угол, 1- правый верхний угол, -1 - убрали
+int top_position=-1; // 0 - Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР», 1- РїСЂР°РІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР», -1 - СѓР±СЂР°Р»Рё
 //static bool mid_button_down=false;
 
 static bool right_button_down=false;
 static bool left_button_down=false;
 
 //====================================================================================
-// Собственно, хук 
+// РЎРѕР±СЃС‚РІРµРЅРЅРѕ, С…СѓРє 
 //====================================================================================
 LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam) 
 {
@@ -43,51 +43,51 @@ LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam)
 			switch(wParam)
 			{
 			case WM_MOUSEMOVE:
-				//if(pMouseStruct->pt.x+pMouseStruct->pt.y<5) // А находимся ли мы в верхнем левом углу экрана?
-				if((pMouseStruct->pt.y-pMouseStruct->pt.x>(screen_y-1)-5)) // А находимся ли мы в нижнем левом углу экрана?
+				//if(pMouseStruct->pt.x+pMouseStruct->pt.y<5) // Рђ РЅР°С…РѕРґРёРјСЃСЏ Р»Рё РјС‹ РІ РІРµСЂС…РЅРµРј Р»РµРІРѕРј СѓРіР»Сѓ СЌРєСЂР°РЅР°?
+				if((pMouseStruct->pt.y-pMouseStruct->pt.x>(screen_y-1)-5)) // Рђ РЅР°С…РѕРґРёРјСЃСЏ Р»Рё РјС‹ РІ РЅРёР¶РЅРµРј Р»РµРІРѕРј СѓРіР»Сѓ СЌРєСЂР°РЅР°?
 				{
-					// Запускаем таймер, только если пришли в угол снаружи!!!
+					// Р—Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ, С‚РѕР»СЊРєРѕ РµСЃР»Рё РїСЂРёС€Р»Рё РІ СѓРіРѕР» СЃРЅР°СЂСѓР¶Рё!!!
 					if(0!=top_position) SetTimer(MHhwnd,2,MHSettings::timeout_mouse_switch,NULL); // 
 					top_position=0;
-					// это ваще не надо last_screen_top_time=timeGetTime();
+					// СЌС‚Рѕ РІР°С‰Рµ РЅРµ РЅР°РґРѕ last_screen_top_time=timeGetTime();
 				} 
-				//else if(pMouseStruct->pt.x-pMouseStruct->pt.y>screen_x-5) // Правый верхний угол
-				else if(pMouseStruct->pt.x+pMouseStruct->pt.y>(screen_x-1)+(screen_y-1)-5) // Правый нижний угол
+				//else if(pMouseStruct->pt.x-pMouseStruct->pt.y>screen_x-5) // РџСЂР°РІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР»
+				else if(pMouseStruct->pt.x+pMouseStruct->pt.y>(screen_x-1)+(screen_y-1)-5) // РџСЂР°РІС‹Р№ РЅРёР¶РЅРёР№ СѓРіРѕР»
 				{
-					// Запускаем таймер, только если пришли в угол снаружи!!!
+					// Р—Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ, С‚РѕР»СЊРєРѕ РµСЃР»Рё РїСЂРёС€Р»Рё РІ СѓРіРѕР» СЃРЅР°СЂСѓР¶Рё!!!
 					if(1!=top_position) SetTimer(MHhwnd,2,MHSettings::timeout_mouse_switch,NULL);
-					//top_position=0; // Пока дублируем левый верхний угол
+					//top_position=0; // РџРѕРєР° РґСѓР±Р»РёСЂСѓРµРј Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР»
 					top_position=1; 
 				}
 				else if((top_position!=-1)&&(pMouseStruct->pt.y<screen_y)&&(pMouseStruct->pt.y>=0)&&
-					(pMouseStruct->pt.x<screen_x)&&(pMouseStruct->pt.x>=0)) // Ждали окончания сигнала таймера, но уехали из угла
-					// не рассматриваем выход за границы экрана
+					(pMouseStruct->pt.x<screen_x)&&(pMouseStruct->pt.x>=0)) // Р–РґР°Р»Рё РѕРєРѕРЅС‡Р°РЅРёСЏ СЃРёРіРЅР°Р»Р° С‚Р°Р№РјРµСЂР°, РЅРѕ СѓРµС…Р°Р»Рё РёР· СѓРіР»Р°
+					// РЅРµ СЂР°СЃСЃРјР°С‚СЂРёРІР°РµРј РІС‹С…РѕРґ Р·Р° РіСЂР°РЅРёС†С‹ СЌРєСЂР°РЅР°
 				{
 					KillTimer(MHhwnd,2);
 					top_position=-1;
 				}
 
-				// Обычная обработка - но теперь с оговоркой: двойной щелчок правой мог остановить эмуляцию!
+				// РћР±С‹С‡РЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° - РЅРѕ С‚РµРїРµСЂСЊ СЃ РѕРіРѕРІРѕСЂРєРѕР№: РґРІРѕР№РЅРѕР№ С‰РµР»С‡РѕРє РїСЂР°РІРѕР№ РјРѕРі РѕСЃС‚Р°РЅРѕРІРёС‚СЊ СЌРјСѓР»СЏС†РёСЋ!
 				if(!flag_stop_emulation)
 				{
 					if(MHSettings::hh)
 					{
-						// Только в режиме 6 scroll отличается от move, остальным режимам всё равно, что вызывать
+						// РўРѕР»СЊРєРѕ РІ СЂРµР¶РёРјРµ 6 scroll РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ move, РѕСЃС‚Р°Р»СЊРЅС‹Рј СЂРµР¶РёРјР°Рј РІСЃС‘ СЂР°РІРЅРѕ, С‡С‚Рѕ РІС‹Р·С‹РІР°С‚СЊ
 						if((right_button_down && left_button_down) || flag_scroll_started) 
 						{
 							MHSettings::hh->OnMouseScroll(pMouseStruct->pt.x, pMouseStruct->pt.y);
-							// !!! Ошибка была !!! Кроме режима 6 никто не знает, что мышь на месте стоит !!!
-nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при скролле мышь не двигать, если скролл из окошка!
+							// !!! РћС€РёР±РєР° Р±С‹Р»Р° !!! РљСЂРѕРјРµ СЂРµР¶РёРјР° 6 РЅРёРєС‚Рѕ РЅРµ Р·РЅР°РµС‚, С‡С‚Рѕ РјС‹С€СЊ РЅР° РјРµСЃС‚Рµ СЃС‚РѕРёС‚ !!!
+nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // РўРµРїРµСЂСЊ РїСЂРё СЃРєСЂРѕР»Р»Рµ РјС‹С€СЊ РЅРµ РґРІРёРіР°С‚СЊ, РµСЃР»Рё СЃРєСЂРѕР»Р» РёР· РѕРєРѕС€РєР°!
 						}
 						MHSettings::hh->OnMouseMove(pMouseStruct->pt.x, pMouseStruct->pt.y);
 					}
 				}
 
-				// Флаг запрещает двигать мышь, когда нажата правая кнопка
+				// Р¤Р»Р°Рі Р·Р°РїСЂРµС‰Р°РµС‚ РґРІРёРіР°С‚СЊ РјС‹С€СЊ, РєРѕРіРґР° РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР°
 				if((right_button_down)&&(MHSettings::flag_no_move_right_mb)) return 1;
 				break;
 
-			case WM_MBUTTONDOWN: // У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
+			case WM_MBUTTONDOWN: // РЈ РЎР°С€Рё Р—РµРЅСЊРєРѕ СЂРѕР»СЊ РїСЂР°РІРѕР№ РєРЅРѕРїРєРё РІС‹РїРѕР»РЅСЏРµС‚ РєРѕР»С‘СЃРёРєРѕ!!! Рђ РЅР°СЃС‚РѕСЏС‰Р°СЏ РїСЂР°РІР°СЏ РґРµР»Р°РµС‚ С‚РѕР»СЊРєРѕ СЃРєСЂРѕР»Р»
 #ifdef SASHA_ZENKO
 				flag_scroll_started=true;
 				return 1;
@@ -98,43 +98,43 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 				right_button_down=true;
 				if(MHSettings::hh)
 				{
-					// Проверим, не собираемся ли мы ткнуть в наш квадратик?
-					// Что означает начало скролла
+					// РџСЂРѕРІРµСЂРёРј, РЅРµ СЃРѕР±РёСЂР°РµРјСЃСЏ Р»Рё РјС‹ С‚РєРЅСѓС‚СЊ РІ РЅР°С€ РєРІР°РґСЂР°С‚РёРє?
+					// Р§С‚Рѕ РѕР·РЅР°С‡Р°РµС‚ РЅР°С‡Р°Р»Рѕ СЃРєСЂРѕР»Р»Р°
 					if(flag_inside_window)
 					{
 						flag_scroll_started=true;
 						flag_stop_mouse=true;
 						if(MHSettings::hh) MHSettings::hh->Deinitialize();
-						return 1; // Подавляем это нажатие
+						return 1; // РџРѕРґР°РІР»СЏРµРј СЌС‚Рѕ РЅР°Р¶Р°С‚РёРµ
 					}
-					// Нет, это не начало скролла, обрабатываем по обычному
+					// РќРµС‚, СЌС‚Рѕ РЅРµ РЅР°С‡Р°Р»Рѕ СЃРєСЂРѕР»Р»Р°, РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РїРѕ РѕР±С‹С‡РЅРѕРјСѓ
 					else if(MHSettings::flag_right_mb_iskey) 
 					{
-						// Только если ещё не действует таймер!
+						// РўРѕР»СЊРєРѕ РµСЃР»Рё РµС‰С‘ РЅРµ РґРµР№СЃС‚РІСѓРµС‚ С‚Р°Р№РјРµСЂ!
 						if(!flag_right_button_waits)
 						{
 							MHKeypad::Press4(10,true);
-							//if(MHSettings::flag_right_mb_push_twice) MHKeypad::Press4(10,false); // Это если мы при отпускании мыши жмём клавишу ещё раз
+							//if(MHSettings::flag_right_mb_push_twice) MHKeypad::Press4(10,false); // Р­С‚Рѕ РµСЃР»Рё РјС‹ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РјС‹С€Рё Р¶РјС‘Рј РєР»Р°РІРёС€Сѓ РµС‰С‘ СЂР°Р·
 							if(MHSettings::flag_right_mb_push_twice)
 							{
-								SetTimer(MHhwnd,4,MHSettings::timeout_mouse_click,NULL); // Это если мы при отпускании мыши жмём клавишу ещё раз
+								SetTimer(MHhwnd,4,MHSettings::timeout_mouse_click,NULL); // Р­С‚Рѕ РµСЃР»Рё РјС‹ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РјС‹С€Рё Р¶РјС‘Рј РєР»Р°РІРёС€Сѓ РµС‰С‘ СЂР°Р·
 								flag_right_button_waits=true;
 							}
 						}
 					}
 					else suppress_right_mb=MHSettings::hh->OnRDown();
 					
-					// Заплаточка: двойной щелчок переводит левую кнопку мыши в другое состояние
+					// Р—Р°РїР»Р°С‚РѕС‡РєР°: РґРІРѕР№РЅРѕР№ С‰РµР»С‡РѕРє РїРµСЂРµРІРѕРґРёС‚ Р»РµРІСѓСЋ РєРЅРѕРїРєСѓ РјС‹С€Рё РІ РґСЂСѓРіРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 					if(MHSettings::flag_right_mb_doubleclick)
 					{
 						DWORD this_time=timeGetTime();
-						if(this_time-last_right_down_time<500) // 1/2 секунды
+						if(this_time-last_right_down_time<500) // 1/2 СЃРµРєСѓРЅРґС‹
 						{
 #ifdef _DEBUG
-		 OutputDebugString("Двойной щелчок правой\n");
+		 OutputDebugString(L"Р”РІРѕР№РЅРѕР№ С‰РµР»С‡РѕРє РїСЂР°РІРѕР№\n");
 #endif
 							
-							// Переключаем режим эмуляции
+							// РџРµСЂРµРєР»СЋС‡Р°РµРј СЂРµР¶РёРј СЌРјСѓР»СЏС†РёРё
 							if(flag_stop_emulation) flag_stop_emulation=false;
 							else
 							{
@@ -147,12 +147,12 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					
 
 
-					// Правую кнопку мыши подавляем (но не всегда)
+					// РџСЂР°РІСѓСЋ РєРЅРѕРїРєСѓ РјС‹С€Рё РїРѕРґР°РІР»СЏРµРј (РЅРѕ РЅРµ РІСЃРµРіРґР°)
 					if (suppress_right_mb) return 1;
 				}
 				break;
 
-			case WM_MBUTTONUP:	// У Саши Зенько роль правой кнопки выполняет колёсико!!! А настоящая правая делает только скролл
+			case WM_MBUTTONUP:	// РЈ РЎР°С€Рё Р—РµРЅСЊРєРѕ СЂРѕР»СЊ РїСЂР°РІРѕР№ РєРЅРѕРїРєРё РІС‹РїРѕР»РЅСЏРµС‚ РєРѕР»С‘СЃРёРєРѕ!!! Рђ РЅР°СЃС‚РѕСЏС‰Р°СЏ РїСЂР°РІР°СЏ РґРµР»Р°РµС‚ С‚РѕР»СЊРєРѕ СЃРєСЂРѕР»Р»
 #ifdef SASHA_ZENKO
 				flag_scroll_started=false;
 				return 1;
@@ -160,16 +160,16 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 			case WM_RBUTTONUP:
 				right_button_down=false;
 
-				// Возможно, мы ждали отпускания мыши после двойного щелчка
+				// Р’РѕР·РјРѕР¶РЅРѕ, РјС‹ Р¶РґР°Р»Рё РѕС‚РїСѓСЃРєР°РЅРёСЏ РјС‹С€Рё РїРѕСЃР»Рµ РґРІРѕР№РЅРѕРіРѕ С‰РµР»С‡РєР°
 				if(flag_stop_emulation) flag_stop_emulation=false;
 
-				// Возможно, это был скролл?
+				// Р’РѕР·РјРѕР¶РЅРѕ, СЌС‚Рѕ Р±С‹Р» СЃРєСЂРѕР»Р»?
 				if(flag_scroll_started)
 				{
 					flag_scroll_started=false;
 					flag_stop_mouse=false;
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
-					return 1; // подавляем, так как подавили нажатие
+					return 1; // РїРѕРґР°РІР»СЏРµРј, С‚Р°Рє РєР°Рє РїРѕРґР°РІРёР»Рё РЅР°Р¶Р°С‚РёРµ
 				}
 
 				if(MHSettings::hh)
@@ -178,10 +178,10 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					{
 						if(MHSettings::flag_right_mb_push_twice) 
 						{
-							// Только если ещё не действует таймер!
+							// РўРѕР»СЊРєРѕ РµСЃР»Рё РµС‰С‘ РЅРµ РґРµР№СЃС‚РІСѓРµС‚ С‚Р°Р№РјРµСЂ!
 							if(!flag_right_button_waits)
 							{
-								MHKeypad::Press4(10,true); // Это если мы при отпускании мыши жмём клавишу ещё раз
+								MHKeypad::Press4(10,true); // Р­С‚Рѕ РµСЃР»Рё РјС‹ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РјС‹С€Рё Р¶РјС‘Рј РєР»Р°РІРёС€Сѓ РµС‰С‘ СЂР°Р·
 								SetTimer(MHhwnd,4,MHSettings::timeout_mouse_click,NULL); 
 								flag_right_button_waits=true;
 							}
@@ -191,15 +191,15 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					else suppress_right_mb = MHSettings::hh->OnRUp();
 
 
-					// Правую кнопку мыши подавляем (но не всегда)
+					// РџСЂР°РІСѓСЋ РєРЅРѕРїРєСѓ РјС‹С€Рё РїРѕРґР°РІР»СЏРµРј (РЅРѕ РЅРµ РІСЃРµРіРґР°)
 					if (suppress_right_mb) return 1;
 				}
 				break;
 
 			case WM_LBUTTONDOWN:
 				left_button_down=true;
-				// Проверим, не собираемся ли мы ткнуть в наш квадратик?
-				// Что означает начало скролла
+				// РџСЂРѕРІРµСЂРёРј, РЅРµ СЃРѕР±РёСЂР°РµРјСЃСЏ Р»Рё РјС‹ С‚РєРЅСѓС‚СЊ РІ РЅР°С€ РєРІР°РґСЂР°С‚РёРє?
+				// Р§С‚Рѕ РѕР·РЅР°С‡Р°РµС‚ РЅР°С‡Р°Р»Рѕ СЃРєСЂРѕР»Р»Р°
 				//if((flag_left_button_key)&&(flag_inside_window))
 				/* if((flag_inside_window)||(right_button_down))
 				{
@@ -207,7 +207,7 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
 					return 1;
 				}
-				// Нет, это не начало скролла, обрабатываем по обычному
+				// РќРµС‚, СЌС‚Рѕ РЅРµ РЅР°С‡Р°Р»Рѕ СЃРєСЂРѕР»Р»Р°, РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РїРѕ РѕР±С‹С‡РЅРѕРјСѓ
 				else 
 				*/
 				if((flag_left_button_key)&&(MHSettings::hh))
@@ -219,8 +219,8 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 
 			case WM_LBUTTONUP:
 				left_button_down=false;
-				// Таперича включение левой кнопки мыши 
-			/*	if(MHSettings::timeout_mouse_switch<timeGetTime()-last_left_down_time) // смена режима
+				// РўР°РїРµСЂРёС‡Р° РІРєР»СЋС‡РµРЅРёРµ Р»РµРІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё 
+			/*	if(MHSettings::timeout_mouse_switch<timeGetTime()-last_left_down_time) // СЃРјРµРЅР° СЂРµР¶РёРјР°
 				{
 					Beep(450,100);
 					
@@ -233,7 +233,7 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 					else 
 					{
 						flag_left_button_key=true;
-						break; // позволить обработать отпускание мыши системе, мы ещё не перехватили её нажатие, не трогаем и отпускание
+						break; // РїРѕР·РІРѕР»РёС‚СЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ РѕС‚РїСѓСЃРєР°РЅРёРµ РјС‹С€Рё СЃРёСЃС‚РµРјРµ, РјС‹ РµС‰С‘ РЅРµ РїРµСЂРµС…РІР°С‚РёР»Рё РµС‘ РЅР°Р¶Р°С‚РёРµ, РЅРµ С‚СЂРѕРіР°РµРј Рё РѕС‚РїСѓСЃРєР°РЅРёРµ
 					}
 				}
 			*/
@@ -241,10 +241,10 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при 
 				{
 					flag_scroll_started=false;
 					if(MHSettings::hh) MHSettings::hh->Deinitialize();
-					return 1; // подавляем, так как подавили нажатие
+					return 1; // РїРѕРґР°РІР»СЏРµРј, С‚Р°Рє РєР°Рє РїРѕРґР°РІРёР»Рё РЅР°Р¶Р°С‚РёРµ
 				}
 				else */ 
-				if(flag_left_button_key) // держали недолго
+				if(flag_left_button_key) // РґРµСЂР¶Р°Р»Рё РЅРµРґРѕР»РіРѕ
 				{
 					MHSettings::hh->OnLUp();
 					return 1;
