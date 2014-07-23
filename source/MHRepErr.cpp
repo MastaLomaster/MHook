@@ -7,8 +7,11 @@
 #include <stdio.h>
 #include "MHRepErr.h"
 
+typedef TOBIIGAZE_API const char* (TOBIIGAZE_CALL *type_tobiigaze_get_error_message)(tobiigaze_error_code error_code);
+extern type_tobiigaze_get_error_message fp_tobiigaze_get_error_message;
+
 // Сообщает о СИСТЕМНЫХ ошибках времени исполнения
-void MHReportError(TCHAR *SourceFile, TCHAR *FuncName, int LineNumber)
+void MHReportError(TCHAR *SourceFile, TCHAR *FuncName, int LineNumber, HWND hwnd)
 {
 	DWORD res;				// Результат функции FormatMessage
 	void *BKBStringError;	// Указатель на строку для получения системной ошибки
@@ -44,7 +47,7 @@ void MHReportError(TCHAR *SourceFile, TCHAR *FuncName, int LineNumber)
 	}
 
 	//Печатаем сообщение об ошибке (если возможно, на экран)
-	MessageBox(NULL,BKBMessage,L"MH: сообщение об ошибке",MB_OK|MB_ICONINFORMATION );
+	MessageBox(hwnd,BKBMessage,L"MH: сообщение об ошибке",MB_OK|MB_ICONINFORMATION );
 
 }
 
@@ -54,4 +57,35 @@ void MHReportError(TCHAR *Error, HWND hwnd)
 {
 	//Печатаем сообщение об ошибке (если возможно, на экран)
 	MessageBox(hwnd,Error,L"Непорядок!",MB_OK|MB_ICONINFORMATION );
+}
+
+//============================================================================================
+// Для ошибок Tobii Gaze SDK (перегружена)
+//============================================================================================
+void MHReportError(tobiigaze_error_code tbg_error_code, TCHAR *SourceFile, TCHAR *FuncName, int LineNumber, HWND hwnd)
+{
+	TCHAR ARCMessage[1024];	// Это строка, в которой формируется сообщение об ошибке
+	TCHAR ConvertASCII2W[1024];
+
+	if (tbg_error_code)
+    {
+		const TCHAR *tmp_char;
+		if(fp_tobiigaze_get_error_message)
+		{
+			MultiByteToWideChar(CP_ACP, 0, (*fp_tobiigaze_get_error_message)(tbg_error_code), -1, ConvertASCII2W, 1023);
+			tmp_char=ConvertASCII2W;
+		}
+		else tmp_char=L"неизвестно";
+
+		// Сформировать строку с полным описанием ошибки
+		swprintf_s(ARCMessage, _countof(ARCMessage),
+			L"Module: %s\nFunction: %s\nLine number: %d\nОшибка Tobii Gaze SDK: %d (%s)",
+			SourceFile, FuncName, LineNumber,
+			tbg_error_code, 
+			tmp_char);
+
+
+		//Печатаем сообщение об ошибке (на экран)
+		MessageBox(hwnd,ARCMessage,L"MHook:Gaze SDK: сообщение об ошибке",MB_OK|MB_ICONINFORMATION );
+	}
 }

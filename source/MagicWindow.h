@@ -2,19 +2,21 @@
 #ifndef __MH_MAGICWND
 #define __MH_MAGICWND
 
-#define NUM_MAGIC_WINDOWS 2
+#define NUM_MAGIC_WINDOWS 16
 
 class MagicWindow
 {
 public:
+	int myindex; // Нужно, когда общается с диалогом установок
 	HWND MWhwnd; // Хендл окна
-	bool active; // Показывается ли?
+	int active; // Показывается ли?
 	TCHAR mw_name[256]; // Надпись в окне
 	int mw_color; // цвет окна
-	LONG x,y,width,height; // координаты и размеры
-	bool button_or_switch; // true = кнопка, false=выключатель
-	int mouse_or_eytracker; // 1 - мышь, 2 - айтрекер, 3 - и то, и сё
-	int button_index;
+	int x,y,width,height; // координаты и размеры
+	int button_or_switch; // 0 = кнопка, 1  = выключатель
+	int mouse_or_eytracker; // 0 - мышь, 1 - айтрекер
+	int button_index; // Номер клавиши в массиве коавиш
+	int mw_group; // группа взаимоисключающих клавиш, от 1 до 4 (или 0=нет группы)
 	bool pressed;
 	bool f_inside_window;
 	TRACKMOUSEEVENT tme;
@@ -29,6 +31,7 @@ public:
 	void Press(); // нажимает или отпускает клавишу
 
 	static bool editmode;
+	static RECT adjust_rect; // корректировка размеров окна с учетом заголовка и рамки
 protected:
 	static bool initialized;
 

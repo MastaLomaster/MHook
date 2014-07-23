@@ -5,6 +5,9 @@
 #include "Settings.h"
 #include "MHRepErr.h"
 #include "MagicWindow.h"
+#include "CircleWindow.h"
+#include "TET.h"
+#include "TobiiREX.h"
 
 #define MH_WINDOW_SIZE 200
 
@@ -15,9 +18,12 @@ TCHAR*		MHAppName=L"Из мыши в клавиатуру V2 09.07a";
 HINSTANCE	MHInst;
 HWND		MHhwnd;
 HBRUSH green_brush, yellow_brush, red_brush, blue_brush, brushes[4];
+HPEN green_pen;
+HFONT hfont;
 
 short xsize,ysize; // Размер окна
 LONG screen_x, screen_y;
+double screen_scale=1.0;
 HHOOK handle;
 
 // Оконная процедура определена в MH002.cpp
@@ -25,7 +31,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,	UINT message, WPARAM wparam, LPARAM lparam);
 // А эта - в HookProc
 LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam);
 
+extern bool G_eytracker_is_working;
+extern int G_eytracker_num; // какой из трекеров выбран
+
+//=======================================================================
 // программа
+//=======================================================================
 int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 // Командную строку не обрабатываем
 {
@@ -42,6 +53,13 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	screen_x=GetSystemMetrics(SM_CXSCREEN);
 	screen_y=GetSystemMetrics(SM_CYSCREEN);
 
+	// Козлиная система разрешений экрана в windows8.1...
+	DEVMODE dm;
+	ZeroMemory (&dm, sizeof (dm));
+	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &dm);
+
+	screen_scale=((double)screen_x)/dm.dmPelsWidth;
+
 	// Кисти
 	green_brush=CreateSolidBrush(RGB(100,255,100));
 	yellow_brush=CreateSolidBrush(RGB(227,198,2));
@@ -51,7 +69,14 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	brushes[1]=yellow_brush;
 	brushes[2]=red_brush;
 	brushes[3]=blue_brush;
+	hfont=CreateFont( -32, 0, 0, 0, FW_BOLD, 0, 0, 0,
+		RUSSIAN_CHARSET,
+		0, 0, 0, 0, L"Arial");
+		// Кисти
+	green_pen=CreatePen(PS_SOLID,4,RGB(100,255,100)); // зелёная
 
+	// Создаём окно с кружком
+	CircleWindow::Init();
 	
 	// Создаём волшебные окна (пока скрытые)
 	MagicWindow::Init();
@@ -59,12 +84,10 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 
 	// С самого начала пытаемся загрузить конфигурацию по умолчанию
 	MHSettings::OpenMHookConfig(NULL,L"default.MHOOK");
+	
 	// До появления окна выводим окно установок 
 	if(MHSettings::SettingsDialogue(NULL)) return -1;
 	
-
-
-
 	// Регистрация класса окна
 	WNDCLASS wcl={CS_HREDRAW | CS_VREDRAW, WndProc, 0, 0, hInst,
                           //LoadIcon( hInst, MAKEINTRESOURCE(IDI_ICON1)),
@@ -118,8 +141,7 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 		return (1);
 	}
 
-	
-	
+		
 	// Инициализируем работу хука
 	handle = SetWindowsHookEx(WH_MOUSE_LL, 
 									HookProc, 
@@ -135,6 +157,15 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 
 	// Чистим за собой (на всякий случай ещё раз, если выходим не по WM_CLOSE)
 	UnhookWindowsHookEx(handle);
+
+	// Выключаем айтрекер
+	if(G_eytracker_is_working) // выключаем
+	{
+		// здесь будет выключение
+		if(0==G_eytracker_num) BKBTobiiREX::Halt(NULL);
+		else BKBTET::Halt(NULL);
+	}
+
 	// битмапы
 	MHBitmap::Halt();
 
@@ -146,6 +177,10 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	DeleteObject(yellow_brush);
 	DeleteObject(red_brush);
 	DeleteObject(blue_brush);
+	// Фонт
+	DeleteObject(hfont);
+	// pen
+	DeleteObject(green_pen);
 
 	return 0;
 }

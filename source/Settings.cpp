@@ -17,6 +17,8 @@
 static char char_buf[4096];
 static TCHAR tchar_buf[4096];
 
+void ResetEytrackerBuffer(); // Определена в OnGazeData
+
 extern HINSTANCE	MHInst;
 extern HWND		MHhwnd;
 extern HHOOK handle;
@@ -79,19 +81,6 @@ MHookHandler6 hh6;
 #define MH_NUM_SENSITIVITY 6
 static MHIntChar dlg_sensitivity[MH_NUM_SENSITIVITY]={{L"1",1},{L"5",5},{L"10",10},{L"25",25},{L"50",50},{L"100",100}}; 
 static int dlg_current_sensitivity=2;
-
-/*
-// Какие клавиши нажимать
-#define MH_NUM_SCANCODES 16
-static MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
-{
-	{"<ничего>",0xFFFF},
-	{"вверх",0xE048},{"вправо",0xE04D},{"вниз",0xE050},{"влево",0xE04B},
-	{"W",0x11},{"D",0x20},{"S",0x1F},{"A",0x1E},
-	{"Z",0x2C},{"X",0x2D},{"C",0x2E},
-	{"пробел",0x39},{"F1",0x3B},{"TAB",0x0F},
-	{"Esc",0x01}
-};*/ 
 
 
 // Здесь нет PrtScr,Pause
@@ -165,23 +154,11 @@ static MHIntChar dlg_circlescales[MH_NUM_CIRCLE_SCALES]={{L"не использ�
 static int dlg_current_circlescale=0;
 
 // static int res; // Selection result
-// Временно - диалог номер два
-static BOOL CALLBACK DlgSettings2WndProc(HWND hdwnd,
+// Прототип диалога номер два
+BOOL CALLBACK DlgSettings2WndProc(HWND hdwnd,
 						   UINT uMsg,
 						   WPARAM wparam,
-						   LPARAM lparam )
-{
-if (uMsg==WM_COMMAND)
-	{
-	switch (LOWORD(wparam))
-		{
-			case IDOK: 	//Хорошо!
-				EndDialog(hdwnd,0);
-				return 1;
-		}
-	} // switch WM_COMMAND
-return 0;
-}
+						   LPARAM lparam );
 
 //===================================================================
 // Диалог настроек
@@ -239,6 +216,7 @@ if (uMsg==WM_COMMAND)
 		case IDOK: 	//Хорошо!
 			// 1. Чувствительность
 			MHSettings::BeforeSaveOrStart(hdwnd);
+			ResetEytrackerBuffer();
 			EndDialog(hdwnd,0);
 			return 1;
 		} // switch WM_COMMAND
@@ -571,7 +549,7 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 //=======================================================================================================
 
 
-typedef enum {save_empty,save_int,save_bool,save_WORD, save_DWORD,save_LONG} T_save_type;
+typedef enum {save_empty,save_int,save_bool,save_WORD, save_MagicWindows} T_save_type;
 
 typedef struct
 {
@@ -583,7 +561,7 @@ typedef struct
 	int max_index;
 } T_save_struct;
 
-#define NUM_SAVE_LINES 38
+#define NUM_SAVE_LINES 39
 static T_save_struct save_struct[NUM_SAVE_LINES]=
 {
 	{"Sensitivity",save_int,&dlg_current_sensitivity,save_int,&dlg_sensitivity, MH_NUM_SENSITIVITY},
@@ -634,7 +612,9 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"RightMBPushTwice", save_bool, &MHSettings::flag_right_mb_push_twice,save_empty,0,0},
 	{"DownAll", save_bool, &MHSettings::flag_downall,save_empty,0,0},
 	{"SkipFast", save_bool, &MHSettings::flag_skip_fast,save_empty,0,0},
-	{"UpImmediately", save_bool, &MHSettings::flag_up_immediately,save_empty,0,0}
+	{"UpImmediately", save_bool, &MHSettings::flag_up_immediately,save_empty,0,0},
+
+	{"MagicWindows", save_MagicWindows, 0,save_empty,0,0}//39 - сохраняет ВСЕ MagicWindows одним махом
 };
 
 int MHSettings::OpenMHookConfig(HWND hwnd, TCHAR *default_filename)
@@ -749,6 +729,13 @@ int MHSettings::OpenMHookConfig(HWND hwnd, TCHAR *default_filename)
 					*((bool *)ss.pointer)=int_arg1;
 					break;
 
+				case save_MagicWindows:
+					// Для проверки, что количество окон совпадает
+					if(1!=sscanf_s(char_buf,"%d",&int_arg1)) goto load_error;
+					if(NUM_MAGIC_WINDOWS!=int_arg1) goto load_error;
+					if(Load2(fin)) goto load_error;
+					break;
+
 				default:
 					goto load_error; // Не умеем обрабатывать
 				}
@@ -767,12 +754,14 @@ int MHSettings::OpenMHookConfig(HWND hwnd, TCHAR *default_filename)
 	swprintf_s(tchar_buf,L"Файл конфигурации прочитан без ошибок.\r\nЧисло считанных параметров: %d", num_succeeded);
 	MHReportError(tchar_buf,hwnd);
 #endif
+	fclose(fin);
 	return 0;
 
 
 load_error:
 	swprintf_s(tchar_buf,L"Файл конфигурации прочитан с ошибками.\r\nВозможно, он от другой версии программы.\r\nОднако, число успешно считанных параметров: %d\r\n(Рекомендую сохранить конфигурацию заново)", num_succeeded);
 	MHReportError(tchar_buf,hwnd);
+	fclose(fin);
 	return -1;
 }
 
@@ -813,7 +802,7 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 	SendDlgItemMessage(hwnd,IDC_EDIT1, WM_SETTEXT, 0L, (LPARAM)tfiletitle);
 
 	FILE *fout=NULL;
-	_wfopen_s(&fout,tfilename,L"w");
+	_wfopen_s(&fout,tfilename,L"w+");
 	if(NULL==fout)
 	{
 		wcscpy_s(tchar_buf,L"Не могу создать файл: '");
@@ -840,6 +829,10 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 		case save_bool:
 			fprintf(fout,"%d ",*((bool *)ss.pointer));
 			break;
+
+		case save_MagicWindows:
+			Save2(fout);
+			break;
 		}
 
 		// Проверочное значение
@@ -855,7 +848,7 @@ int MHSettings::SaveMHookConfig(HWND hwnd)
 		}
 
 
-		// Перевод строки
+		// Перевод строки 
 		fprintf(fout,"\n");
 	}
 

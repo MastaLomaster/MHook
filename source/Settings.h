@@ -2,6 +2,7 @@
 #ifndef __MH_SETTINGS
 #define __MH_SETTINGS
 
+#include <stdio.h>
 #include "HookHandler.h"
 
 class MHSettings
@@ -33,6 +34,13 @@ public:
 	static void FillDialogue(HWND hdwnd);
 	static void AfterLoad(HWND hdwnd);
 	static void BeforeSaveOrStart(HWND hdwnd);
+
+	// Для второго окна диалога
+	static void FillDialogue2(HWND hdwnd);
+	static void BeforeSaveOrStart2(HWND hdwnd);
+	static void Save2(FILE *f);
+	static int Load2(FILE *f);
+
 protected:
 	static int num_positions, mouse_sensitivity;
 
