@@ -5,7 +5,7 @@
 #include "CircleWindow.h"
 #include "MagicWindow.h"
 
-//extern HWND hwnds[2];
+extern bool G_show_circle;
 extern LONG screen_x, screen_y;
 extern double screen_scale;
 
@@ -35,7 +35,9 @@ void on_gaze_data(const tobiigaze_gaze_data* gazedata, void *user_data)
 	int x,y,i;
 	MagicWindow *mw;
 
-	
+	// Обрабатываем, только если видно два глаза
+	if(gazedata->tracking_status != TOBIIGAZE_TRACKING_STATUS_BOTH_EYES_TRACKED) return;
+
 	// Сбагриваем очередные данные, только если старые уже обработаны
 	if(0==InterlockedCompareExchange(&TGD_is_processing,1,0))
 	{
@@ -44,7 +46,7 @@ void on_gaze_data(const tobiigaze_gaze_data* gazedata, void *user_data)
 		y=screen_y/2.0*(gazedata->left.gaze_point_on_display_normalized.y+gazedata->right.gaze_point_on_display_normalized.y)-50/screen_scale;
 
 		// Двигаем окно с кружочком (если оно есть)
-		if(CircleWindow::CircleHwnd) PostMessage(CircleWindow::CircleHwnd, WM_USER_MOVEWINDOW,x,y);
+		if(CircleWindow::CircleHwnd&&G_show_circle) PostMessage(CircleWindow::CircleHwnd, WM_USER_MOVEWINDOW,x,y);
 	
 		if(MagicWindow::editmode)
 		{

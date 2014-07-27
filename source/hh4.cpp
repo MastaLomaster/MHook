@@ -15,6 +15,7 @@ extern LONG screen_x, screen_y;
 extern HBRUSH green_brush, yellow_brush;
 
 static LONG X,Y,last_x_direction,last_y_direction;
+static DWORD last_any_time=0; // Время последнего пперемещения мыши
 
 // Какие кнопки нажимать в зависимости от направлений x_direction+1, y_direction+1;
 static int button_pressed[3][3]=
@@ -24,11 +25,14 @@ static int button_pressed[3][3]=
 	{1,2,3}
 };
 
+
 void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
 	LONG x_direction=0,y_direction=0;
-		
+	DWORD time_now=timeGetTime(); // Только для отслеживания быстрых движений
+	float Qspeed;
+
 	// При нажатой правой кнопке мыши не передаём её движения в MHVector,
 	// НО! продолжаем отслеживать last_x и last_y, не сбрасывая initialized! 
 	if((initialized)&&(!rbutton_pressed)) // известно последнее положение мыши, правая кнопка не нажата
@@ -64,13 +68,23 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 
 		if(0==MHSettings::mode3axe) // Не работает ли ось Х по режиму 3?
 		{
-			position=MHVector::NewValues(dx,0); // Движение по оси Y не передаём
+			// Игнорирование быстрого движение только по оси x(?)
+			// Это работает частично, начало и конец быстрого движения не ловятся, как в режиме 3
+			if(MHSettings::flag_skip_fast)
+			{
+				Qspeed=100.0f*(dx*dx)/(time_now-last_any_time); // пикселов в квадрате за 100 мс
+				if(Qspeed>MHSettings::minimal_mouse_speed) // Это элемент быстрого движения!!!
+					dx=0;
+			}
+
+			//position=MHVector::NewValues(dx,0); // Движение по оси Y не передаём
+			position=MHVector::NewValues(dx,dy); // Движение по оси Y ПЕРЕДАЁМ
 
 			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
 			{
-				// По оси x возможно только 2 направления: 2 и 6
-				if(2==position) x_direction=1;
-				else x_direction=-1;
+				if((position>0)&&(position<4)) x_direction=1;
+				else if(position>4) x_direction=-1;
+				else x_direction=0;
 				
 				position_mem=position; // нужно ли отпустить кнопку по таймеру?
 			}
@@ -115,15 +129,24 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 
 		if(1==MHSettings::mode3axe) // Не работает ли ось Y по режиму 3?
 		{
-			position=MHVector::NewValues(0,dy); // Движение по оси X не передаём
+			// Игнорирование быстрого движение только по оси y(?)
+			// Это работает частично, начало и конец быстрого движения не ловятся, как в режиме 3
+			if(MHSettings::flag_skip_fast)
+			{
+				Qspeed=100.0f*(dy*dy)/(time_now-last_any_time); // пикселов в квадрате за 100 мс
+				if(Qspeed>MHSettings::minimal_mouse_speed) // Это элемент быстрого движения!!!
+					dy=0;
+			}
+
+			// position=MHVector::NewValues(0,dy); // Движение по оси X не передаём
+			position=MHVector::NewValues(dx,dy); // Движение по оси X ПЕРЕДАЁМ
 
 			if(0<=position) // -2=мышь подвинулась на недостаточное растояние, -1= направление не изменилось
 			{
-				// По оси y возможно только 2 направления: 0 и 4
-				// Здесь внимание на знаки!!!
-				if(0==position) y_direction=-1;
-				else y_direction=1;
-				
+				if((position>2)&&(position<6)) y_direction=1;
+				else if((position>6)||(position<2)) y_direction=-1;
+				else y_direction=0;
+
 				position_mem=position; // нужно ли отпустить кнопку по таймеру?
 			}
 			else // сохраняем направление по x
@@ -189,6 +212,8 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 			}
 			else MHKeypad::Press(position,true);
 		}
+
+		last_any_time=time_now;
 	}
 
 	// Для рисования квадратиков это надо делать всегда

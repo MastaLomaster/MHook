@@ -39,6 +39,8 @@ int MHVector::NewValues(LONG dx, LONG dy)
 
 	// 1.3 Ищем угол наклона вектора
 	angle=(int)(atan2((double)y,(double)x)*180.0/PI);
+
+/*
 	// Вводим новую проверку! Остаток от предыдущего движения игнорируем, если он не попадает в тот же румб,
 	// что и новое движение !!
 	angle2=(int)(atan2((double)dy,(double)dx)*180.0/PI);
@@ -50,6 +52,7 @@ int MHVector::NewValues(LONG dx, LONG dy)
 		quad_y=(LONG)(MH_WINDOW_SIZE/2*y/sqrt((double)(x*x+y*y)));
 		return -2;
 	}
+*/
 
 	// 1.4 Находим, какому румбу это соответствует
 	if(4==MHSettings::GetNumPositions())

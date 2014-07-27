@@ -279,6 +279,9 @@ void MHSettings::FillDialogue2(HWND hdwnd)
 	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_ADDSTRING, 0, (LPARAM)L"TheEyeTribe");
 	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_SETCURSEL, G_eytracker_num, 0L);
 
+	if(G_eytracker_is_working) 		SetWindowText(GetDlgItem( hdwnd, IDC_EYETRACKER_CONNECT ), L"Остановить");
+	else	SetWindowText(GetDlgItem( hdwnd, IDC_EYETRACKER_CONNECT ), L"Запустить");
+
 	if(G_show_circle) SendDlgItemMessage(hdwnd, IDC_CHECK_EYECIRCLE, BM_SETCHECK, BST_CHECKED, 0);
 	else SendDlgItemMessage(hdwnd, IDC_CHECK_EYECIRCLE, BM_SETCHECK, BST_UNCHECKED, 0);
 
