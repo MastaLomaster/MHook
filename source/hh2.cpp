@@ -8,7 +8,7 @@ extern LONG screen_x, screen_y;
 extern HWND		MHhwnd;
 
 
-void MHookHandler2::OnMouseMove(LONG _x, LONG _y)
+int MHookHandler2::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
 		
@@ -49,6 +49,8 @@ void MHookHandler2::OnMouseMove(LONG _x, LONG _y)
 	if(last_y<0) last_y=0;
 	if(last_x>=screen_x) last_x=screen_x-1;
 	if(last_y>=screen_y) last_y=screen_y-1;
+
+	return 0; // Новая директива ВЦСПС
 }
 
 bool MHookHandler2::OnRDown()

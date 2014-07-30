@@ -7,7 +7,7 @@
 class MHookHandler2:public MHookHandler
 {
 public:
-	virtual void OnMouseMove(LONG _x, LONG _y);
+	virtual int OnMouseMove(LONG _x, LONG _y);
 	virtual bool OnRDown();
 	virtual bool OnRUp();
 	virtual int GetPosition() { return position_mem;}

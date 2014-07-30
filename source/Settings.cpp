@@ -12,6 +12,8 @@
 #include "hh4.h"
 #include "hh5.h"
 #include "hh6.h"
+#include "hh7.h"
+#include "hh8.h"
 #include "MagicWindow.h"
 
 static char char_buf[4096];
@@ -72,6 +74,8 @@ MHookHandler3 hh3;
 MHookHandler4 hh4;
 MHookHandler5 hh5;
 MHookHandler6 hh6;
+MHookHandler7 hh7;
+MHookHandler8 hh8;
 
 //=== Массивы для параметров в диалоге ===/
 
@@ -164,78 +168,124 @@ BOOL CALLBACK DlgSettings2WndProc(HWND hdwnd,
 // Диалог настроек
 //===================================================================
 static bool wasd_shown=true; // Показаны ли кнопки WSAD?
+HWND game_hwnd=0,parent_hwnd;
+static TCHAR game_window_name[1024]={0}, game_window_class[1024]={0}, game_window_handler[1024]={0};
+
 static BOOL CALLBACK DlgSettingsWndProc(HWND hdwnd,
 						   UINT uMsg,
 						   WPARAM wparam,
 						   LPARAM lparam )
 {
-if (uMsg==WM_COMMAND)
-	{
-	switch (LOWORD(wparam))
-		{
-		case IDC_BUTTON_DOPLNITELNO:
-			MagicWindow::ShowEditable();
-			DialogBox(MHInst,MAKEINTRESOURCE(IDD_DIALOG_SETTINGS2),hdwnd,(DLGPROC)DlgSettings2WndProc);
-			MagicWindow::Hide();
-			return 1;
-
-		case IDC_BUTTON_WASD:
-
-			if(wasd_shown)
-			{
-				wasd_shown=false;
-				SendDlgItemMessage(hdwnd,IDC_UP, CB_SETCURSEL, 1, 0L);
-				SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_SETCURSEL, 2, 0L);
-				SendDlgItemMessage(hdwnd,IDC_DOWN, CB_SETCURSEL, 3, 0L);
-				SendDlgItemMessage(hdwnd,IDC_LEFT, CB_SETCURSEL, 4, 0L);
-			}
-			else
-			{
-				wasd_shown=true;
-				SendDlgItemMessage(hdwnd,IDC_UP, CB_SETCURSEL, 27, 0L);
-				SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_SETCURSEL, 8, 0L);
-				SendDlgItemMessage(hdwnd,IDC_DOWN, CB_SETCURSEL, 23, 0L);
-				SendDlgItemMessage(hdwnd,IDC_LEFT, CB_SETCURSEL, 5, 0L);
-			}
-			return 1;
-
-		case IDC_BUTTON_LOAD: // Грузим файл 
-			MHSettings::OpenMHookConfig(hdwnd);
-			MHSettings::AfterLoad(hdwnd);
-			return 1;
-
-		case IDC_BUTTON_SAVE: // Сохраняем файл 
-			MHSettings::BeforeSaveOrStart(hdwnd); // Текущие поля диалога копирует в переменные
-			MHSettings::SaveMHookConfig(hdwnd);
-			return 1;
-
-		case IDCANCEL: // Не случилось 
-			EndDialog(hdwnd,2);
-			return 1;
-
-		case IDOK: 	//Хорошо!
-			// 1. Чувствительность
-			MHSettings::BeforeSaveOrStart(hdwnd);
-			ResetEytrackerBuffer();
-			EndDialog(hdwnd,0);
-			return 1;
-		} // switch WM_COMMAND
-
+	POINT p;
+	HWND old_game_hwnd;
 	
-	}// if WM_COMMAND 
-
-	if (uMsg==WM_INITDIALOG)
+	switch(uMsg)
 	{
+	case WM_COMMAND:
+		switch (LOWORD(wparam))
+			{
+			case IDC_BUTTON_DOPLNITELNO:
+				MagicWindow::ShowEditable();
+				DialogBox(MHInst,MAKEINTRESOURCE(IDD_DIALOG_SETTINGS2),hdwnd,(DLGPROC)DlgSettings2WndProc);
+				MagicWindow::Hide();
+				return 1;
+
+			case IDC_BUTTON_WASD:
+				if(wasd_shown)
+				{
+					wasd_shown=false;
+					SendDlgItemMessage(hdwnd,IDC_UP, CB_SETCURSEL, 1, 0L);
+					SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_SETCURSEL, 2, 0L);
+					SendDlgItemMessage(hdwnd,IDC_DOWN, CB_SETCURSEL, 3, 0L);
+					SendDlgItemMessage(hdwnd,IDC_LEFT, CB_SETCURSEL, 4, 0L);
+				}
+				else
+				{
+					wasd_shown=true;
+					SendDlgItemMessage(hdwnd,IDC_UP, CB_SETCURSEL, 27, 0L);
+					SendDlgItemMessage(hdwnd,IDC_RIGHT, CB_SETCURSEL, 8, 0L);
+					SendDlgItemMessage(hdwnd,IDC_DOWN, CB_SETCURSEL, 23, 0L);
+					SendDlgItemMessage(hdwnd,IDC_LEFT, CB_SETCURSEL, 5, 0L);
+				}
+				return 1;
+
+			case IDC_BUTTON_LOAD: // Грузим файл 
+				MHSettings::OpenMHookConfig(hdwnd);
+				MHSettings::AfterLoad(hdwnd);
+				return 1;
+
+			case IDC_BUTTON_SAVE: // Сохраняем файл 
+				MHSettings::BeforeSaveOrStart(hdwnd); // Текущие поля диалога копирует в переменные
+				MHSettings::SaveMHookConfig(hdwnd);
+				return 1;
+
+			case IDCANCEL: // Не случилось 
+				EndDialog(hdwnd,2);
+				return 1;
+	
+			case IDOK: 	//Хорошо!
+				// 1. Чувствительность
+				MHSettings::BeforeSaveOrStart(hdwnd);
+				ResetEytrackerBuffer();
+				EndDialog(hdwnd,0);
+				return 1;
+			} // switch WM_COMMAND
+		break; // if WM_COMMAND 
+
+	case WM_INITDIALOG:
 		//SetWindowPos(hdwnd,NULL,50,50,0,0,SWP_NOSIZE);
 		//SetWindowPos(hdwnd,HWND_TOPMOST,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
 		SetWindowPos(hdwnd,HWND_TOP,50,50,0,0,SWP_NOSIZE | SWP_NOREDRAW);
 		// Здесь не работает. 
 		//SetWindowLong(hdwnd,GWL_STYLE,GetWindowLong(hdwnd,GWL_STYLE) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-		
+			
 		MHSettings::FillDialogue(hdwnd); // Заполняет списки
 		MHSettings::AfterLoad(hdwnd); // Показываем текущие значения
+
+		// Окно игры
+		if(game_hwnd)
+		{
+			SendDlgItemMessage(hdwnd,IDC_EDIT3, WM_SETTEXT, 0L, (LPARAM)game_window_name);
+			SendDlgItemMessage(hdwnd,IDC_EDIT2, WM_SETTEXT, 0L, (LPARAM)game_window_handler);
+		}
+
 		return 1; // Да, ставь фокус куда надо
-	}
+		break;
+
+	// Дрег-и-дроп для поиска окна (передрано из mini-proga)
+	case WM_LBUTTONDOWN:
+		SetCapture(hdwnd);
+		return 1;
+
+	case WM_LBUTTONUP:
+		p.x=((short)LOWORD(lparam));
+		p.y=((short)HIWORD(lparam));
+		ReleaseCapture();
+		ClientToScreen(hdwnd,&p);
+		parent_hwnd=WindowFromPoint(p);
+		old_game_hwnd=game_hwnd;
+		if((hdwnd!=parent_hwnd)&&(0!=parent_hwnd)) // Нашли некое окно
+		{
+			//game_hwnd=parent_hwnd;
+			do
+			{
+				game_hwnd=parent_hwnd;
+				parent_hwnd=GetParent(game_hwnd);
+			} while (parent_hwnd!=0);
+			
+			GetWindowText(game_hwnd,game_window_name, 1023);
+			GetClassName(game_hwnd,game_window_class, 1023);
+
+			_itow_s((int)game_hwnd,game_window_handler,16);
+			SendDlgItemMessage(hdwnd,IDC_EDIT3, WM_SETTEXT, 0L, (LPARAM)game_window_name);
+			SendDlgItemMessage(hdwnd,IDC_EDIT2, WM_SETTEXT, 0L, (LPARAM)game_window_handler);
+		}
+		else game_hwnd=old_game_hwnd;
+
+		
+		return 1;
+
+	} // switch uMsg
 
  
 return 0;
@@ -385,6 +435,8 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		SendDlgItemMessage(hdwnd, IDC_RADIO4, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO5, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO6, BM_SETCHECK, BST_UNCHECKED, 0);
+		SendDlgItemMessage(hdwnd, IDC_RADIO7, BM_SETCHECK, BST_UNCHECKED, 0);
+		SendDlgItemMessage(hdwnd, IDC_RADIO8, BM_SETCHECK, BST_UNCHECKED, 0);
 
 		switch(MHSettings::mode)
 		{
@@ -410,6 +462,14 @@ void MHSettings::AfterLoad(HWND hdwnd)
 
 		case 6:
 			SendDlgItemMessage(hdwnd, IDC_RADIO6, BM_SETCHECK, BST_CHECKED, 0);
+			break;
+		
+		case 7:
+			SendDlgItemMessage(hdwnd, IDC_RADIO7, BM_SETCHECK, BST_CHECKED, 0);
+			break;
+
+		case 8:
+			SendDlgItemMessage(hdwnd, IDC_RADIO8, BM_SETCHECK, BST_CHECKED, 0);
 			break;
 		}
 		
@@ -591,7 +651,7 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"Mode3Axe",save_int,&dlg_current_mode3axe,save_int,&dlg_mode3axe, MH_DEAD_ZONES},
 	{"FastSpeed",save_int,&dlg_current_speed,save_int,&dlg_speed, MH_NUM_SPEED},
 	{"Directions",save_int,&dlg_current_direction,save_int,&dlg_dirs, MH_NUM_DIRECTIONS},
-	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 7}, // Количество режимов (на самом деле нулевого нет, то есть 6)
+	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 9}, // Количество режимов (на самом деле нулевого нет, то есть 6)
 
 	// 4. Таймаут
 	{"TimeoutMove",save_int,&dlg_current_timeout,save_int,dlg_timeout,MH_NUM_TIMEOUT}, //23
@@ -954,6 +1014,16 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				MHSettings::hh=&hh6;
 				// Важно!!! В 6 режиме принудительно выставить 4 позиций!!!
 				MHSettings::SetNumPositions(4); dlg_current_direction=0;
+			}
+			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO7,BM_GETCHECK, 0, 0)) 
+			{
+				MHSettings::mode=7;
+				MHSettings::hh=&hh7;
+			}
+			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO8,BM_GETCHECK, 0, 0)) 
+			{
+				MHSettings::mode=8;
+				MHSettings::hh=&hh8;
 			}
 			//else
 

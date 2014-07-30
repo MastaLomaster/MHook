@@ -26,7 +26,7 @@ static int button_pressed[3][3]=
 };
 
 
-void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
+int MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
 	LONG x_direction=0,y_direction=0;
@@ -236,6 +236,8 @@ void MHookHandler4::OnMouseMove(LONG _x, LONG _y)
 	//sprintf(debug_buf,"dx: %d  dy: %d\n", dx,dy);
 	//OutputDebugString(debug_buf);
 #endif
+
+	return 0; // Новая директива ВЦСПС
 }
 
 bool MHookHandler4::OnRDown()
@@ -347,5 +349,10 @@ void MHookHandler4::OnTimer()
 	InvalidateRect(MHhwnd,NULL,TRUE);
 
 	position_mem=-1;
+	KillTimer(MHhwnd,1);
+}
+
+void MHookHandler4::Halt()
+{
 	KillTimer(MHhwnd,1);
 }

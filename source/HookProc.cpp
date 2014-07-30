@@ -79,7 +79,17 @@ LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam)
 							// !!! Ошибка была !!! Кроме режима 6 никто не знает, что мышь на месте стоит !!!
 nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Теперь при скролле мышь не двигать, если скролл из окошка!
 						}
-						MHSettings::hh->OnMouseMove(pMouseStruct->pt.x, pMouseStruct->pt.y);
+
+						// Проверка возвращаемого значения была сделана из-за режима 8 (BFBC2)
+						// Много кода пришлось перелопатить...
+						// и не помогло...
+						if(MHSettings::hh->OnMouseMove(pMouseStruct->pt.x, pMouseStruct->pt.y))
+						{
+							//pMouseStruct->pt.x=0;
+							//pMouseStruct->pt.y=0;
+							return 1;
+						}
+						
 					}
 				}
 

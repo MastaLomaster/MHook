@@ -14,7 +14,7 @@
 //char debug_buf[4096];
 
 // Глобальные переменные, которые могут потребоваться везде
-TCHAR*		MHAppName=L"Из мыши в клавиатуру V2 09.07a";
+TCHAR*		MHAppName=L"Из мыши в клавиатуру V2 28.07";
 HINSTANCE	MHInst;
 HWND		MHhwnd;
 HBRUSH green_brush, yellow_brush, red_brush, blue_brush, brushes[4];

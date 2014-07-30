@@ -42,7 +42,7 @@ void MHookHandler3::OnTimer()
 	
 }
 
-void MHookHandler3::OnMouseMove(LONG _x, LONG _y)
+int MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
 	DWORD time_now=timeGetTime();
@@ -232,6 +232,8 @@ void MHookHandler3::OnMouseMove(LONG _x, LONG _y)
 	if(last_y<0) last_y=0;
 	if(last_x>=screen_x) last_x=screen_x-1;
 	if(last_y>=screen_y) last_y=screen_y-1;
+
+	return 0; // Новая директива ВЦСПС
 }
 
 bool MHookHandler3::OnRDown()

@@ -98,7 +98,7 @@ void MHookHandler6::OnMouseScroll(LONG _x, LONG _y)
 //======================================================================================================
 // Здесь используется только для того, чтобы сохранялся режим initialized (не терять dx, dy)
 //======================================================================================================
-void MHookHandler6::OnMouseMove(LONG _x, LONG _y)
+int MHookHandler6::OnMouseMove(LONG _x, LONG _y)
 {
 	
 	if(!initialized) initialized=true;
@@ -109,6 +109,8 @@ void MHookHandler6::OnMouseMove(LONG _x, LONG _y)
 	if(last_y<0) last_y=0;
 	if(last_x>=screen_x) last_x=screen_x-1;
 	if(last_y>=screen_y) last_y=screen_y-1;
+
+	return 0; // Новая директива ВЦСПС
 }
 
 bool MHookHandler6::OnRDown()

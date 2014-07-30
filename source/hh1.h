@@ -8,7 +8,7 @@ class MHookHandler1:public MHookHandler
 {
 public:
 	MHookHandler1():flag_opposite_direction(false){};
-	virtual void OnMouseMove(LONG _x, LONG _y);
+	virtual int OnMouseMove(LONG _x, LONG _y);
 	virtual bool OnRDown();
 	virtual bool OnRUp();
 	virtual void OnDraw(HDC hdc, LONG window_size); // для отладки

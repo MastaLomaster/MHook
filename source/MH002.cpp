@@ -54,14 +54,18 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 		case WM_DESTROY:	// Завершение программы
 			// Чистим за собой
-			if((3==MHSettings::mode)||(4==MHSettings::mode)||(1==MHSettings::mode)) KillTimer(hwnd,1);
+			UnhookWindowsHookEx(handle);
+
+			//if((3==MHSettings::mode)||(4==MHSettings::mode)||(1==MHSettings::mode)) 
+			KillTimer(hwnd,1);
 			KillTimer(hwnd,2);
 			KillTimer(hwnd,3);
 			KillTimer(hwnd,4);
 
 			MHKeypad::Reset();
-			UnhookWindowsHookEx(handle);
+			
 			PostQuitMessage(0);
+			//DestroyWindow(hwnd);
 			break;
 
 		case WM_TIMER:
@@ -117,6 +121,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			break;
 
 		case WM_DISPLAYCHANGE:
+			//screen_x=(LONG)((SHORT)LOWORD(lparam));
+			//screen_y=(LONG)((SHORT)HIWORD(lparam));
 			screen_x=LOWORD(lparam);
 			screen_y=HIWORD(lparam);
 			break;

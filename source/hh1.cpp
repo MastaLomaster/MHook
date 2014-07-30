@@ -52,7 +52,7 @@ bool IsOpposite(int old_direction, int new_direction)
 }
 
 
-void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
+int MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
 	bool goup=false; // Сразу отпусти клавишу
@@ -328,6 +328,8 @@ void MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 	//sprintf(debug_buf,"dx: %d  dy: %d\n", dx,dy);
 	//OutputDebugString(debug_buf);
 #endif
+
+	return 0; // Новая директива ВЦСПС
 }
 
 bool MHookHandler1::OnRDown()

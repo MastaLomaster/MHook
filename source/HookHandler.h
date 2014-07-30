@@ -8,7 +8,7 @@ class MHookHandler
 {
 public:
 	MHookHandler():rbutton_pressed(false),initialized(false),position_mem(-1),mouse_path_squared(0){};
-	virtual void OnMouseMove(LONG _x, LONG _y)=0;
+	virtual int OnMouseMove(LONG _x, LONG _y)=0;
 	virtual void OnMouseScroll(LONG _x, LONG _y);
 	virtual bool OnRDown()=0; // возвращает, нужно ли подавлять правый клик
 	virtual bool OnRUp()=0;

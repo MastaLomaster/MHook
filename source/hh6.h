@@ -7,7 +7,7 @@
 class MHookHandler6:public MHookHandler
 {
 public:
-	virtual void OnMouseMove(LONG _x, LONG _y);
+	virtual int OnMouseMove(LONG _x, LONG _y);
 	virtual void OnMouseScroll(LONG _x, LONG _y); // Единственный хендлер, где эта функция перегружена
 	virtual bool OnRDown();
 	virtual bool OnRUp();
