@@ -13,7 +13,6 @@
 #include "hh5.h"
 #include "hh6.h"
 #include "hh7.h"
-#include "hh8.h"
 #include "MagicWindow.h"
 
 static char char_buf[4096];
@@ -75,7 +74,6 @@ MHookHandler4 hh4;
 MHookHandler5 hh5;
 MHookHandler6 hh6;
 MHookHandler7 hh7;
-MHookHandler8 hh8;
 
 //=== Массивы для параметров в диалоге ===/
 
@@ -88,7 +86,7 @@ static int dlg_current_sensitivity=2;
 
 
 // Здесь нет PrtScr,Pause
-MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
+MHWORDChar dlg_scancodes[MH_NUM_SCANCODES_EXTRA]=
 {
 	{L"<ничего>",0xFFFF}, // 0
 	{L"вверх",0xE048},{L"вправо",0xE04D},{L"вниз",0xE050},{L"влево",0xE04B}, // 1-4
@@ -111,7 +109,9 @@ MHWORDChar dlg_scancodes[MH_NUM_SCANCODES]=
 	{L"PgDn",0xE051},{L"Num Lock",0x45},{L"Num /",0xE035},{L"Num *",0x37},{L"Num -",0x4A}, // 85-89
 	{L"Num +",0x4E},{L"Num Enter",0xE01C},{L"(Num . - запрещена)",0xFFFF},{L"Num 0",0x52},{L"Num 1",0x4F}, // 90-94
 	{L"Num 2",0x50},{L"Num 3",0x51},{L"Num 4",0x4B},{L"Num 5",0x4C},{L"Num 6",0x4D}, // 95-99
-	{L"Num 7",0x47},{L"Num 8",0x48},{L"Num 9",0x49} // 100-102
+	{L"Num 7",0x47},{L"Num 8",0x48},{L"Num 9",0x49}, // 100-102
+	// А теперь - дополнения для супер-окон!
+	{L"ЛКМ+F12",0xE101},{L"Мышь влево",0xE102},{L"Мышь вправо",0xE103},{L"Скролл туда",0xE104},{L"Скролл сюда",0xE105}
 
 }; 
 
@@ -168,16 +168,12 @@ BOOL CALLBACK DlgSettings2WndProc(HWND hdwnd,
 // Диалог настроек
 //===================================================================
 static bool wasd_shown=true; // Показаны ли кнопки WSAD?
-HWND game_hwnd=0,parent_hwnd;
-static TCHAR game_window_name[1024]={0}, game_window_class[1024]={0}, game_window_handler[1024]={0};
 
 static BOOL CALLBACK DlgSettingsWndProc(HWND hdwnd,
 						   UINT uMsg,
 						   WPARAM wparam,
 						   LPARAM lparam )
 {
-	POINT p;
-	HWND old_game_hwnd;
 	
 	switch(uMsg)
 	{
@@ -242,48 +238,9 @@ static BOOL CALLBACK DlgSettingsWndProc(HWND hdwnd,
 		MHSettings::FillDialogue(hdwnd); // Заполняет списки
 		MHSettings::AfterLoad(hdwnd); // Показываем текущие значения
 
-		// Окно игры
-		if(game_hwnd)
-		{
-			SendDlgItemMessage(hdwnd,IDC_EDIT3, WM_SETTEXT, 0L, (LPARAM)game_window_name);
-			SendDlgItemMessage(hdwnd,IDC_EDIT2, WM_SETTEXT, 0L, (LPARAM)game_window_handler);
-		}
-
 		return 1; // Да, ставь фокус куда надо
 		break;
 
-	// Дрег-и-дроп для поиска окна (передрано из mini-proga)
-	case WM_LBUTTONDOWN:
-		SetCapture(hdwnd);
-		return 1;
-
-	case WM_LBUTTONUP:
-		p.x=((short)LOWORD(lparam));
-		p.y=((short)HIWORD(lparam));
-		ReleaseCapture();
-		ClientToScreen(hdwnd,&p);
-		parent_hwnd=WindowFromPoint(p);
-		old_game_hwnd=game_hwnd;
-		if((hdwnd!=parent_hwnd)&&(0!=parent_hwnd)) // Нашли некое окно
-		{
-			//game_hwnd=parent_hwnd;
-			do
-			{
-				game_hwnd=parent_hwnd;
-				parent_hwnd=GetParent(game_hwnd);
-			} while (parent_hwnd!=0);
-			
-			GetWindowText(game_hwnd,game_window_name, 1023);
-			GetClassName(game_hwnd,game_window_class, 1023);
-
-			_itow_s((int)game_hwnd,game_window_handler,16);
-			SendDlgItemMessage(hdwnd,IDC_EDIT3, WM_SETTEXT, 0L, (LPARAM)game_window_name);
-			SendDlgItemMessage(hdwnd,IDC_EDIT2, WM_SETTEXT, 0L, (LPARAM)game_window_handler);
-		}
-		else game_hwnd=old_game_hwnd;
-
-		
-		return 1;
 
 	} // switch uMsg
 
@@ -436,7 +393,6 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		SendDlgItemMessage(hdwnd, IDC_RADIO5, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO6, BM_SETCHECK, BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdwnd, IDC_RADIO7, BM_SETCHECK, BST_UNCHECKED, 0);
-		SendDlgItemMessage(hdwnd, IDC_RADIO8, BM_SETCHECK, BST_UNCHECKED, 0);
 
 		switch(MHSettings::mode)
 		{
@@ -466,10 +422,6 @@ void MHSettings::AfterLoad(HWND hdwnd)
 		
 		case 7:
 			SendDlgItemMessage(hdwnd, IDC_RADIO7, BM_SETCHECK, BST_CHECKED, 0);
-			break;
-
-		case 8:
-			SendDlgItemMessage(hdwnd, IDC_RADIO8, BM_SETCHECK, BST_CHECKED, 0);
 			break;
 		}
 		
@@ -564,6 +516,7 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 		KillTimer(hwnd,2);
 		KillTimer(hwnd,3);
 		KillTimer(hwnd,4);
+		KillTimer(hwnd,5);
 		
 		// 3. Сбрасываем MVector и MHKeypad и чё там ещё
 		MHSettings::hh->Halt();
@@ -598,7 +551,7 @@ BOOL MHSettings::SettingsDialogue(HWND hwnd)
 
 	if(!return_code)
 	{
-		MagicWindow::ShowRuntime();
+		MagicWindow::ShowRuntime(); // Здесь же взводится пятый таймер
 	}
 
 	return return_code;
@@ -651,7 +604,7 @@ static T_save_struct save_struct[NUM_SAVE_LINES]=
 	{"Mode3Axe",save_int,&dlg_current_mode3axe,save_int,&dlg_mode3axe, MH_DEAD_ZONES},
 	{"FastSpeed",save_int,&dlg_current_speed,save_int,&dlg_speed, MH_NUM_SPEED},
 	{"Directions",save_int,&dlg_current_direction,save_int,&dlg_dirs, MH_NUM_DIRECTIONS},
-	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 9}, // Количество режимов (на самом деле нулевого нет, то есть 6)
+	{"Mode",save_int,&MHSettings::mode,save_empty,NULL, 8}, // Количество режимов (на самом деле нулевого нет, то есть 7)
 
 	// 4. Таймаут
 	{"TimeoutMove",save_int,&dlg_current_timeout,save_int,dlg_timeout,MH_NUM_TIMEOUT}, //23
@@ -792,8 +745,8 @@ int MHSettings::OpenMHookConfig(HWND hwnd, TCHAR *default_filename)
 				case save_MagicWindows:
 					// Для проверки, что количество окон совпадает
 					if(1!=sscanf_s(char_buf,"%d",&int_arg1)) goto load_error;
-					if(NUM_MAGIC_WINDOWS!=int_arg1) goto load_error;
-					if(Load2(fin)) goto load_error;
+					if(NUM_MAGIC_WINDOWS<int_arg1) goto load_error;
+					if(Load2(fin,int_arg1)) goto load_error;
 					break;
 
 				default:
@@ -1020,11 +973,7 @@ void MHSettings::BeforeSaveOrStart(HWND hdwnd)
 				MHSettings::mode=7;
 				MHSettings::hh=&hh7;
 			}
-			else if(BST_CHECKED==SendDlgItemMessage(hdwnd,IDC_RADIO8,BM_GETCHECK, 0, 0)) 
-			{
-				MHSettings::mode=8;
-				MHSettings::hh=&hh8;
-			}
+
 			//else
 
 			// 3.2. - кнопка не используется

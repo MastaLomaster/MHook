@@ -10,7 +10,7 @@ static bool movement_happened=false;
 int MHookHandler5::OnMouseMove(LONG _x, LONG _y)
 {
 	int position;
-	DWORD time_now;
+	//DWORD time_now;
 	static int x;
 		
 	// При нажатой правой кнопке мыши не передаём её движения в MHVector,

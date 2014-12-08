@@ -6,6 +6,8 @@
 // Потом вынести это на экран параметров
 #undef SASHA_ZENKO
 
+extern bool flag_magic_left_click; // Клик мыши произведён волшебным окном, не отключать его в HookProc,
+
 extern HWND		MHhwnd; // Нужна для установки таймера
 extern LONG screen_x, screen_y; // Для определения углов экрана
 extern bool flag_inside_window; // Определён в оконной процедуре, показывает, что мы внутри окна
@@ -220,7 +222,9 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 				// Нет, это не начало скролла, обрабатываем по обычному
 				else 
 				*/
-				if((flag_left_button_key)&&(MHSettings::hh))
+				//if((flag_left_button_key)&&(MHSettings::hh))
+				// Теперь проверяем, что кнопку не мы сами инициировали из окна
+				if((flag_left_button_key)&&(MHSettings::hh)&&(!flag_magic_left_click))
 				{
 					MHSettings::hh->OnLDown(); 
 					return 1;
@@ -254,11 +258,12 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 					return 1; // подавляем, так как подавили нажатие
 				}
 				else */ 
-				if(flag_left_button_key) // держали недолго
+				if(flag_left_button_key&&(!flag_magic_left_click)) // держали недолго
 				{
 					MHSettings::hh->OnLUp();
 					return 1;
 				}
+				if(flag_magic_left_click) flag_magic_left_click=false;
 				break;
 
 			}

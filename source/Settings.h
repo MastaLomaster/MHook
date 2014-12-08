@@ -39,7 +39,7 @@ public:
 	static void FillDialogue2(HWND hdwnd);
 	static void BeforeSaveOrStart2(HWND hdwnd);
 	static void Save2(FILE *f);
-	static int Load2(FILE *f);
+	static int Load2(FILE *f,int wcount);
 
 protected:
 	static int num_positions, mouse_sensitivity;
@@ -59,7 +59,9 @@ typedef struct
 } MHWORDChar;
 
 #define MH_NUM_SCANCODES 103
+// А это для волшебных окон, которые могут не только кнопки жать, но и ещё всякое
+#define MH_NUM_SCANCODES_EXTRA 108
 
-extern MHWORDChar dlg_scancodes[MH_NUM_SCANCODES];
+extern MHWORDChar dlg_scancodes[MH_NUM_SCANCODES_EXTRA];
 
 #endif

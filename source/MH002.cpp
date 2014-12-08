@@ -1,6 +1,9 @@
 ﻿#include <Windows.h>
 #include "Bitmap.h"
 #include "Settings.h"
+#include "MagicWindow.h"
+
+extern HWND MHhwnd;
 
 bool flag_inside_window=false;
 
@@ -61,6 +64,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			KillTimer(hwnd,2);
 			KillTimer(hwnd,3);
 			KillTimer(hwnd,4);
+			KillTimer(hwnd,5);
 
 			MHKeypad::Reset();
 			
@@ -89,7 +93,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 					// Теперь смена позиция происходит только по выезду мыши из области!
 					//top_position=-1; 
 					//if(MHSettings::SettingsDialogue(hwnd))
-					if(MHSettings::SettingsDialogue(NULL))
+					if(MHSettings::SettingsDialogue(MHhwnd))
 					{
 						// Чистим за собой - возможно, излишне
 						if((3==MHSettings::mode)||(4==MHSettings::mode)||(1==MHSettings::mode)) KillTimer(hwnd,1);
@@ -115,6 +119,11 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 				KillTimer(hwnd,4);
 				MHKeypad::Press4(10,false);
 				flag_right_button_waits=false;
+				break;
+
+			case 5:
+				// Таймер волшебных окон, для имитации движения мыши
+				MagicWindow::OnTimer5();
 				break;
 			}
 			

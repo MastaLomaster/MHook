@@ -16,7 +16,7 @@
 // Глобальные переменные, которые могут потребоваться везде
 TCHAR*		MHAppName=L"Из мыши в клавиатуру V2 28.07";
 HINSTANCE	MHInst;
-HWND		MHhwnd;
+HWND		MHhwnd=NULL;
 HBRUSH green_brush, yellow_brush, red_brush, blue_brush, brushes[4];
 HPEN green_pen;
 HFONT hfont;
@@ -33,7 +33,7 @@ LRESULT  CALLBACK HookProc(int disabled,WPARAM wParam,LPARAM lParam);
 
 extern bool G_eytracker_is_working;
 extern int G_eytracker_num; // какой из трекеров выбран
-
+extern bool timer5_needed; // Из MagicWindow
 //=======================================================================
 // программа
 //=======================================================================
@@ -78,15 +78,10 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	// Создаём окно с кружком
 	CircleWindow::Init();
 	
-	// Создаём волшебные окна (пока скрытые)
-	MagicWindow::Init();
 	
-
 	// С самого начала пытаемся загрузить конфигурацию по умолчанию
 	MHSettings::OpenMHookConfig(NULL,L"default.MHOOK");
 	
-	// До появления окна выводим окно установок 
-	if(MHSettings::SettingsDialogue(NULL)) return -1;
 	
 	// Регистрация класса окна
 	WNDCLASS wcl={CS_HREDRAW | CS_VREDRAW, WndProc, 0, 0, hInst,
@@ -112,7 +107,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	AdjustWindowRect(&rect,	WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, false);
 	
 	//Создание главного окна
-	MHhwnd=CreateWindowEx(WS_EX_LAYERED|WS_EX_TOPMOST,
+	MHhwnd=CreateWindowEx(WS_EX_LAYERED,
+	//MHhwnd=CreateWindowEx(WS_EX_LAYERED|WS_EX_TOPMOST,
 	//MHhwnd=CreateWindow( 
 		MHWindowCName,
 		MHAppName,
@@ -130,9 +126,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 		return (1);
 	}
 
-	// Показываем окно
-    ShowWindow( MHhwnd, SW_SHOWNORMAL );
-	//ShowWindow( KBhwnd, SW_MAXIMIZE );
+	// Показываем окно (перед диалогом настроек свёрнуто)
+    ShowWindow(MHhwnd, SW_MINIMIZE );
 
 	boolresult=UpdateWindow( MHhwnd ); 
 	if(boolresult==0)
@@ -141,6 +136,15 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 		return (1);
 	}
 
+	// Для волшебных окон (и диалога настроек) нужно окно MHhwnd
+	// Создаём волшебные окна (пока скрытые)
+	MagicWindow::Init();
+
+	// Диалог настроек
+	if(MHSettings::SettingsDialogue(MHhwnd)) return -1;
+
+	// Разворачиваем окно mhook
+	ShowWindow( MHhwnd, SW_SHOWNORMAL );
 		
 	// Инициализируем работу хука
 	handle = SetWindowsHookEx(WH_MOUSE_LL, 
