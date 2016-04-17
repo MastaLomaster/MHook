@@ -60,7 +60,7 @@ void MHKeypad::Init(WORD _scancode0, WORD _scancode1, WORD _scancode2, WORD _sca
 
 
 // Тупо нажимает-отжимает одну из 4 клавиш
-void MHKeypad::Press4(int position, bool down, int shift)
+bool MHKeypad::Press4(int position, bool down, int shift)
 {
 #ifdef _DEBUG
 	//if((position<0)||(position>3)) 
@@ -76,7 +76,7 @@ void MHKeypad::Press4(int position, bool down, int shift)
 #endif
 
 	// Спец-кнопка 0xFFFF игнорируется
-	if(0xFFFF==scancode[position+shift]) return;
+	if(0xFFFF==scancode[position+shift]) return false;
 
 	INPUT input={0};
 	input.type=INPUT_KEYBOARD;
@@ -102,6 +102,8 @@ void MHKeypad::Press4(int position, bool down, int shift)
 		button_pressed[11],button_pressed[12],button_pressed[13],button_pressed[14]);
 	OutputDebugString(debug_buf);
 #endif
+
+	return true;
 }
 
 

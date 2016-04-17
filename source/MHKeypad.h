@@ -11,7 +11,8 @@ public:
 	static void Reset(int shift=0);
 	static int GetPosition(){return keypad_position;};
 	static void Press(int position, bool down, int shift=0);
-	static void Press4(int position, bool down, int shift=0);
+	//static void Press4(int position, bool down, int shift=0);
+	static bool Press4(int position, bool down, int shift=0); // теперь возвращает false если реального нажатия не было - это для правой кнопки мыни надо было
 	static void Press8(int position, bool down); // Для 8 умений
 
 protected:

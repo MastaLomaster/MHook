@@ -125,9 +125,9 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 						// Только если ещё не действует таймер!
 						if(!flag_right_button_waits)
 						{
-							MHKeypad::Press4(10,true);
-							//if(MHSettings::flag_right_mb_push_twice) MHKeypad::Press4(10,false); // Это если мы при отпускании мыши жмём клавишу ещё раз
-							if(MHSettings::flag_right_mb_push_twice)
+							if(!MHKeypad::Press4(10,true)) suppress_right_mb=false; // Если было выбрано <ничего>, то нажимаем настоящую кнопку мыши
+							// Это если мы при отпускании мыши жмём клавишу ещё раз (но только если мышь реально подавилась)
+							else if(MHSettings::flag_right_mb_push_twice)
 							{
 								SetTimer(MHhwnd,4,MHSettings::timeout_mouse_click,NULL); // Это если мы при отпускании мыши жмём клавишу ещё раз
 								flag_right_button_waits=true;
@@ -190,15 +190,16 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 					{
 						if(MHSettings::flag_right_mb_push_twice) 
 						{
-							// Только если ещё не действует таймер!
+							// Только если уже не действует таймер!
 							if(!flag_right_button_waits)
 							{
-								MHKeypad::Press4(10,true); // Это если мы при отпускании мыши жмём клавишу ещё раз
+								// Это если мы при отпускании мыши жмём клавишу ещё раз
+								if(!MHKeypad::Press4(10,true)) suppress_right_mb=false; // Если было выбрано <ничего>, то нажимаем настоящую кнопку мыши 
 								SetTimer(MHhwnd,4,MHSettings::timeout_mouse_click,NULL); 
 								flag_right_button_waits=true;
 							}
 						}
-						else MHKeypad::Press4(10,false);
+						else if(!MHKeypad::Press4(10,false)) suppress_right_mb=false; // Если было выбрано <ничего>, то нажимаем настоящую кнопку мыши
 					}
 					else suppress_right_mb = MHSettings::hh->OnRUp();
 
