@@ -27,8 +27,8 @@ static DWORD last_right_down_time;
 int top_position=-1; // 0 - левый верхний угол, 1- правый верхний угол, -1 - убрали
 //static bool mid_button_down=false;
 
-static bool right_button_down=false;
-static bool left_button_down=false;
+bool right_button_down=false;
+bool left_button_down=false;
 
 //====================================================================================
 // Собственно, хук 
@@ -106,8 +106,14 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 #endif
 			case WM_RBUTTONDOWN: 
 
+
 			//case WM_RBUTTONDOWN:
 				right_button_down=true;
+
+				
+				// для отрисовки красных квадратиков
+				InvalidateRect(MHhwnd,NULL,TRUE);
+
 				if(MHSettings::hh)
 				{
 					// Проверим, не собираемся ли мы ткнуть в наш квадратик?
@@ -172,6 +178,10 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 			case WM_RBUTTONUP:
 				right_button_down=false;
 
+			// для отрисовки красных квадратиков
+			InvalidateRect(MHhwnd,NULL,TRUE);
+
+
 				// Возможно, мы ждали отпускания мыши после двойного щелчка
 				if(flag_stop_emulation) flag_stop_emulation=false;
 
@@ -211,6 +221,11 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 
 			case WM_LBUTTONDOWN:
 				left_button_down=true;
+
+				
+				// для отрисовки красных квадратиков
+				InvalidateRect(MHhwnd,NULL,TRUE);
+
 				// Проверим, не собираемся ли мы ткнуть в наш квадратик?
 				// Что означает начало скролла
 				//if((flag_left_button_key)&&(flag_inside_window))
@@ -234,6 +249,11 @@ nomove6:					if(flag_stop_mouse && 6==MHSettings::mode) return 1; // Тепер�
 
 			case WM_LBUTTONUP:
 				left_button_down=false;
+
+				
+				// для отрисовки красных квадратиков
+				InvalidateRect(MHhwnd,NULL,TRUE);
+
 				// Таперича включение левой кнопки мыши 
 			/*	if(MHSettings::timeout_mouse_switch<timeGetTime()-last_left_down_time) // смена режима
 				{

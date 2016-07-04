@@ -88,8 +88,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
                           //LoadIcon( hInst, MAKEINTRESOURCE(IDI_ICON1)),
 						  LoadIcon( NULL, IDI_APPLICATION),
                           LoadCursor(NULL, IDC_ARROW), 
-                          (HBRUSH)GetStockObject(WHITE_BRUSH), 
-						  //NULL,
+                          //(HBRUSH)GetStockObject(WHITE_BRUSH), 
+						  NULL,
 						  NULL,
 						  //MAKEINTRESOURCE(IDR_MENU1),
 						  MHWindowCName };

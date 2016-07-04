@@ -7,6 +7,10 @@ extern HINSTANCE	MHInst;
 
 HDC MHBitmap::hdc4=0, MHBitmap::hdc8=0;
 HBITMAP MHBitmap::hbm4=0, MHBitmap::hbm8=0;
+extern HBRUSH red_brush;
+
+extern bool right_button_down;
+extern bool left_button_down;
 
 void MHBitmap::Init(HWND hwnd)
 {
@@ -93,4 +97,11 @@ void MHBitmap::OnDraw(HDC hdc,int position)
 		} // switch position
 		break;
 	}
+
+	// 4/7/2016 добавляем квадратики нажатий на кнопки мыши
+	static RECT rect1={10,170,30,190};
+	static RECT rect2={170,170,190,190};
+	if(left_button_down) FillRect(hdc,&rect1,red_brush);
+	if(right_button_down) FillRect(hdc,&rect2,red_brush);
+
 }
