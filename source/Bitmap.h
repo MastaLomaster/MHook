@@ -9,8 +9,8 @@ public:
 	static void Halt();
 	static void OnDraw(HDC hdc,int position);
 protected:
-	static HDC hdc4,hdc8;
-	static HBITMAP hbm4, hbm8;
+	static HDC hdc4,hdc8,hdc4red,hdc8red;
+	static HBITMAP hbm4, hbm8, hbm4red, hbm8red;
 };
 
 #endif
