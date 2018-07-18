@@ -22,7 +22,7 @@ HPEN green_pen;
 HFONT hfont;
 
 short xsize,ysize; // Размер окна
-LONG screen_x, screen_y;
+LONG screen_x, screen_y, screen_x_real, screen_y_real;
 double screen_scale=1.0;
 HHOOK handle;
 
@@ -57,6 +57,8 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE,LPSTR cline,INT)
 	DEVMODE dm;
 	ZeroMemory (&dm, sizeof (dm));
 	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &dm);
+	screen_x_real=dm.dmPelsWidth;
+	screen_y_real=dm.dmPelsHeight;
 
 	screen_scale=((double)screen_x)/dm.dmPelsWidth;
 

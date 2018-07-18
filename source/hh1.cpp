@@ -11,7 +11,7 @@
 
 extern HWND		MHhwnd;
 
-extern LONG screen_x, screen_y;
+extern LONG screen_x_real, screen_y_real;
 
 static int alt2_offset=0; // Смещение для альтернативных кодировок
 static int position_mem_opposite=0; // Раньше путались позиции от таймера и от противоположного направления. Теперь это разные переменные. 
@@ -320,8 +320,8 @@ int MHookHandler1::OnMouseMove(LONG _x, LONG _y)
 	last_y=_y;
 	if(last_x<0) last_x=0;
 	if(last_y<0) last_y=0;
-	if(last_x>=screen_x) last_x=screen_x-1;
-	if(last_y>=screen_y) last_y=screen_y-1;
+	if(last_x>=screen_x_real) last_x=screen_x_real-1;
+	if(last_y>=screen_y_real) last_y=screen_y_real-1;
 
 #ifdef _DEBUG
 	// Покажите абсолютные значения мвшиных сообщений

@@ -4,7 +4,7 @@
 #include "MHKeypad.h"
 #include "Settings.h"
 
-extern LONG screen_x, screen_y;
+extern LONG screen_x_real, screen_y_real;
 extern HWND	MHhwnd;
 extern bool flag_stop_mouse; // Останавливаем мышь, только начав дрег внутри окна !!!
 
@@ -91,8 +91,8 @@ void MHookHandler6::OnMouseScroll(LONG _x, LONG _y)
 
 	if(last_x<0) last_x=0;
 	if(last_y<0) last_y=0;
-	if(last_x>=screen_x) last_x=screen_x-1;
-	if(last_y>=screen_y) last_y=screen_y-1;
+	if(last_x>=screen_x_real) last_x=screen_x_real-1;
+	if(last_y>=screen_y_real) last_y=screen_y_real-1;
 }
 
 //======================================================================================================
@@ -107,8 +107,8 @@ int MHookHandler6::OnMouseMove(LONG _x, LONG _y)
 	last_y=_y;
 	if(last_x<0) last_x=0;
 	if(last_y<0) last_y=0;
-	if(last_x>=screen_x) last_x=screen_x-1;
-	if(last_y>=screen_y) last_y=screen_y-1;
+	if(last_x>=screen_x_real) last_x=screen_x_real-1;
+	if(last_y>=screen_y_real) last_y=screen_y_real-1;
 
 	return 0; // Новая директива ВЦСПС
 }

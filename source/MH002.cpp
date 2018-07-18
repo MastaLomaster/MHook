@@ -8,7 +8,8 @@ extern HWND MHhwnd;
 bool flag_inside_window=false;
 
 extern HHOOK handle;
-extern LONG screen_x, screen_y;
+extern LONG screen_x, screen_y, screen_x_real, screen_y_real;
+extern double screen_scale;
 extern int top_position; // Это в HookProc определяет, в каком углу экрана мы задержались.
 extern bool flag_left_button_waits;
 extern bool flag_right_button_waits;
@@ -16,6 +17,9 @@ extern bool flag_right_button_waits;
 LONG quad_x=0,quad_y=0; // Координаты квадратика в окне
 
 static TRACKMOUSEEVENT tme={sizeof(TRACKMOUSEEVENT),TME_LEAVE,0,HOVER_DEFAULT};
+
+// для отладки (определены и назначаются в HookProc)
+extern LONG debug_x, debug_y;
 
 // Традиционно оконная процедура в файле 002
 //====================================================================================
@@ -134,6 +138,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			//screen_y=(LONG)((SHORT)HIWORD(lparam));
 			screen_x=LOWORD(lparam);
 			screen_y=HIWORD(lparam);
+
+			// Козлиная система разрешений экрана в windows8.1...
+			DEVMODE dm;
+			ZeroMemory (&dm, sizeof (dm));
+			EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &dm);
+			screen_x_real=dm.dmPelsWidth;
+			screen_y_real=dm.dmPelsHeight;
+
+			screen_scale=((double)screen_x)/dm.dmPelsWidth;
 			break;
 
 		case WM_PAINT:
@@ -146,6 +159,26 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 			if(MHSettings::hh) MHSettings::hh->OnDraw(hdc,200);
 
+#ifdef _DEBUG
+			// для отладки
+			{
+				wchar_t out_str[256];
+				
+				swprintf_s(out_str,L"screen_x: %ld",screen_x_real);
+				TextOut(hdc, 10,10,out_str, wcslen(out_str));
+
+				swprintf_s(out_str,L"screen_y: %ld",screen_y_real);
+				TextOut(hdc, 10,40,out_str, wcslen(out_str));
+
+				swprintf_s(out_str,L"x: %ld",debug_x);
+				TextOut(hdc, 10,70,out_str, wcslen(out_str));
+
+				swprintf_s(out_str,L"y: %ld",debug_y);
+				TextOut(hdc, 10,100,out_str, wcslen(out_str));
+
+	
+			}
+#endif
 			//if((MHposition>-2)&&(MHposition<4)) MHBitmap::OnDraw(hdc,4,MHposition);
 
 /*			RECT rect;
