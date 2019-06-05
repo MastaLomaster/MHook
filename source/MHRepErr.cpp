@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "MHRepErr.h"
 
-typedef TOBIIGAZE_API const char* (TOBIIGAZE_CALL *type_tobiigaze_get_error_message)(tobiigaze_error_code error_code);
+typedef __declspec(dllimport) const char* (__cdecl *type_tobiigaze_get_error_message)(int error_code);
 extern type_tobiigaze_get_error_message fp_tobiigaze_get_error_message;
 
 // Сообщает о СИСТЕМНЫХ ошибках времени исполнения
@@ -59,10 +59,13 @@ void MHReportError(TCHAR *Error, HWND hwnd)
 	MessageBox(hwnd,Error,L"Непорядок!",MB_OK|MB_ICONINFORMATION );
 }
 
+
+
+
 //============================================================================================
 // Для ошибок Tobii Gaze SDK (перегружена)
 //============================================================================================
-void MHReportError(tobiigaze_error_code tbg_error_code, TCHAR *SourceFile, TCHAR *FuncName, int LineNumber, HWND hwnd)
+void MHReportError(int tbg_error_code, TCHAR *SourceFile, TCHAR *FuncName, int LineNumber, HWND hwnd)
 {
 	TCHAR ARCMessage[1024];	// Это строка, в которой формируется сообщение об ошибке
 	TCHAR ConvertASCII2W[1024];

@@ -4,6 +4,7 @@
 #include "WM_USER_messages.h"
 #include "CircleWindow.h"
 #include "MagicWindow.h"
+#include "TobiiREX.h"
 
 extern bool G_show_circle;
 extern LONG screen_x, screen_y;
@@ -30,21 +31,58 @@ void ResetEytrackerBuffer()
 //===========================================================================================================
 // Функция, которую вызывает REX, когда сообщает данные о глазах
 //===========================================================================================================
-void on_gaze_data(const tobiigaze_gaze_data* gazedata, void *user_data)
+void on_gaze_data(toit_gaze_data* gazedata, void *user_data)
 {
 	int x,y,i;
 	MagicWindow *mw;
-
+	POINT point_left={0,0}, point_right={0,0};
+	
 	// Обрабатываем, только если видно два глаза
-	if(gazedata->tracking_status != TOBIIGAZE_TRACKING_STATUS_BOTH_EYES_TRACKED) return;
+	if(0 == gazedata->toit_status) return;
 
 	// Сбагриваем очередные данные, только если старые уже обработаны
 	if(0==InterlockedCompareExchange(&TGD_is_processing,1,0))
 	{
-		// Переведём в координаты экрана
-		x=screen_x/2.0*(gazedata->left.gaze_point_on_display_normalized.x+gazedata->right.gaze_point_on_display_normalized.x)-50/screen_scale;
-		y=screen_y/2.0*(gazedata->left.gaze_point_on_display_normalized.y+gazedata->right.gaze_point_on_display_normalized.y)-50/screen_scale;
+		// Для проверки рисуем точку на экране
+		switch(gazedata->toit_status)
+		{
+		//case TOBIIGAZE_TRACKING_STATUS_ONLY_LEFT_EYE_TRACKED:
+		//case TOBIIGAZE_TRACKING_STATUS_ONE_EYE_TRACKED_PROBABLY_LEFT:
+		case 2:
+		case 3:
+			gazedata->right.bingo.x=gazedata->left.bingo.x;
+			gazedata->right.bingo.y=gazedata->left.bingo.y;
+			break;
 
+		//case TOBIIGAZE_TRACKING_STATUS_ONE_EYE_TRACKED_UNKNOWN_WHICH:
+		case 4:
+			TGD_is_processing=0;
+			return;
+			break;
+			
+		//case TOBIIGAZE_TRACKING_STATUS_ONE_EYE_TRACKED_PROBABLY_RIGHT:
+		//case TOBIIGAZE_TRACKING_STATUS_ONLY_RIGHT_EYE_TRACKED:
+		case 5:
+		case 6:
+		
+			gazedata->left.bingo.x=gazedata->right.bingo.x;
+			gazedata->left.bingo.y=gazedata->right.bingo.y;
+			break;
+		}
+
+
+		// Трекинг левого глаза 
+		point_left.x=screen_x*gazedata->left.bingo.x;
+		point_left.y=screen_y*gazedata->left.bingo.y;
+				
+		// Трекинг правого глаза 
+		point_right.x=screen_x*gazedata->right.bingo.x;
+		point_right.y=screen_y*gazedata->right.bingo.y;
+				
+		x=(point_right.x+point_left.x)/2;
+		y=(point_right.y+point_left.y)/2;
+		
+		
 		// Двигаем окно с кружочком (если оно есть)
 		if(CircleWindow::CircleHwnd&&G_show_circle) PostMessage(CircleWindow::CircleHwnd, WM_USER_MOVEWINDOW,x,y);
 	

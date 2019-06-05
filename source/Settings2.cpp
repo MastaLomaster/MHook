@@ -299,10 +299,10 @@ void MHSettings::FillDialogue2(HWND hdwnd)
 	// Про ай-трекеры
 	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_ADDSTRING, 0, (LPARAM)L"TheEyeTribe");
 
-#ifndef _WIN64
-	// Для Tobii усть только 32-разрядные библиотеки
-	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_ADDSTRING, 0, (LPARAM)L"Tobii EyeX/Rex");
-#endif _WIN64
+
+	// Для Tobii раньше были только 32-разрядные библиотеки
+	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_ADDSTRING, 0, (LPARAM)L"Tobii 4C/EyeX");
+
 
 	SendDlgItemMessage(hdwnd,IDC_COMBO_EYETRACKER, CB_SETCURSEL, G_eytracker_num, 0L);
 
